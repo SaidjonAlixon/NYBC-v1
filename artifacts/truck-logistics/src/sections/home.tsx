@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { Truck, ShieldCheck, Globe, Clock, Package, BarChart3, Star, ArrowRight, CheckCircle2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export const HeroSection = () => (
   <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
@@ -264,44 +264,99 @@ export const RouteMapSection = () => {
 };
 
 export const FleetSection = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    const section = sectionRef.current;
+    if (!el || !section) return;
+
+    const onWheel = (e: WheelEvent) => {
+      const atStart = el.scrollLeft === 0;
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
+
+      if ((e.deltaY < 0 && atStart) || (e.deltaY > 0 && atEnd)) return;
+
+      e.preventDefault();
+      el.scrollBy({ left: e.deltaY * 1.5, behavior: "smooth" });
+    };
+
+    section.addEventListener("wheel", onWheel, { passive: false });
+    return () => section.removeEventListener("wheel", onWheel);
+  }, []);
+
+  const trucks = [
+    { type: "Dry Van", capacity: "45,000 lbs", best: "General Freight", routes: "All 48 States" },
+    { type: "Reefer", capacity: "43,000 lbs", best: "Temperature Control", routes: "Fresh & Frozen" },
+    { type: "Flatbed", capacity: "48,000 lbs", best: "Oversized Loads", routes: "Heavy Industry" },
+    { type: "Step Deck", capacity: "48,000 lbs", best: "Tall Cargo", routes: "Construction" },
+    { type: "Tanker", capacity: "44,000 lbs", best: "Liquid Freight", routes: "Energy Sector" },
+  ];
+
   return (
-    <section className="py-32 bg-card/20 border-y border-white/5">
+    <section ref={sectionRef} className="py-32 bg-card/20 border-y border-white/5">
       <div className="container px-6 mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">OUR PREMIUM FLEET</h2>
-          <div className="w-20 h-1 bg-primary mx-auto" />
+          <div className="w-20 h-1 bg-primary mx-auto mb-4" />
+          <p className="text-muted-foreground text-sm tracking-widest">SCROLL TO EXPLORE</p>
         </div>
-        <div className="flex gap-6 overflow-x-auto pb-8 snap-x">
-          {[
-            { type: "Dry Van", capacity: "45,000 lbs", best: "General Freight" },
-            { type: "Reefer", capacity: "43,000 lbs", best: "Temperature Control" },
-            { type: "Flatbed", capacity: "48,000 lbs", best: "Oversized Loads" },
-            { type: "Step Deck", capacity: "48,000 lbs", best: "Tall Cargo" }
-          ].map((truck, idx) => (
+        <div
+          ref={scrollRef}
+          className="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-none"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {trucks.map((truck, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="min-w-[300px] md:min-w-[400px] snap-center p-8 bg-background border border-white/5 rounded-xl hover:border-primary/30 transition-all hover:shadow-[0_0_30px_rgba(193,18,31,0.1)] group"
+              className="min-w-[300px] md:min-w-[420px] snap-center p-8 bg-background border border-white/5 rounded-xl hover:border-primary/30 transition-all duration-300 hover:shadow-[0_0_40px_rgba(193,18,31,0.15)] group flex-shrink-0"
             >
-              <div className="h-40 bg-card mb-6 flex items-center justify-center rounded-lg border border-white/5 relative overflow-hidden group-hover:border-primary/50 transition-colors">
-                 <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                 <Truck size={64} className="text-muted-foreground/50 group-hover:text-primary transition-colors" />
+              <div className="h-44 bg-card mb-6 flex items-center justify-center rounded-lg border border-white/5 relative overflow-hidden group-hover:border-primary/50 transition-colors duration-300">
+                <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: -3 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <Truck size={72} className="text-muted-foreground/30 group-hover:text-primary/60 transition-colors duration-300" />
+                </motion.div>
+                <div className="absolute bottom-3 right-3 px-2 py-1 rounded bg-primary/20 border border-primary/30">
+                  <span className="text-xs font-bold text-primary tracking-widest">{truck.routes}</span>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold tracking-tight mb-2">{truck.type}</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
+              <h3 className="text-2xl font-bold tracking-tight mb-3">{truck.type}</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center pb-2 border-b border-white/5">
                   <span className="text-muted-foreground">Capacity:</span>
                   <span className="font-bold text-primary">{truck.capacity}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Best For:</span>
                   <span className="font-bold text-foreground">{truck.best}</span>
                 </div>
               </div>
             </motion.div>
+          ))}
+        </div>
+
+        {/* Scroll indicators */}
+        <div className="flex justify-center items-center gap-3 mt-6">
+          {trucks.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                const el = scrollRef.current;
+                if (!el) return;
+                const cardWidth = el.scrollWidth / trucks.length;
+                el.scrollTo({ left: cardWidth * i, behavior: "smooth" });
+              }}
+              className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-primary transition-colors duration-200"
+              data-testid={`button-fleet-dot-${i}`}
+            />
           ))}
         </div>
       </div>

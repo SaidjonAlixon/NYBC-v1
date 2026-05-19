@@ -11,6 +11,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { CustomCursor } from "@/components/ui/CustomCursor";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 
 import Home from "@/pages/Home";
 import About from "@/pages/About";
@@ -88,6 +89,7 @@ function App() {
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <div className="min-h-[100dvh] flex flex-col bg-background text-foreground overflow-x-hidden transition-colors duration-300">
+              <LoadingScreen />
               <CustomCursor />
               <ScrollProgress />
               <Navbar />

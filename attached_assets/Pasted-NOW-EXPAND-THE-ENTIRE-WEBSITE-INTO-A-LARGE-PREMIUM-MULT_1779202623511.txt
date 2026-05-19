@@ -1,0 +1,335 @@
+NOW EXPAND THE ENTIRE WEBSITE INTO A LARGE PREMIUM MULTI-PAGE EXPERIENCE.
+
+Currently the pages feel too empty and too short.
+
+I want every page to become long, immersive, highly animated, and content-rich like an Awwwards-level premium logistics website.
+
+DO NOT keep sections minimal.
+
+Add MANY additional sections, cinematic layouts, advanced animations, statistics, interactive elements, timelines, sliders, grids, maps, glowing effects, parallax sections, and storytelling blocks.
+
+Every page should feel like a real billion-dollar American logistics corporation website.
+
+IMPORTANT:
+The website should not feel like a simple startup landing page anymore.
+
+I want:
+- more scroll depth
+- more visual storytelling
+- more sections
+- more motion
+- more premium UI blocks
+- more interactive experiences
+- more cinematic transitions
+- more detailed content
+
+Use:
+- Framer Motion
+- GSAP ScrollTrigger
+- Lenis Smooth Scroll
+- Three.js subtle scenes
+- Advanced parallax
+- Mouse movement effects
+- Reveal animations
+- Infinite marquee animations
+- Horizontal scrolling sections
+- Sticky scroll sections
+- Animated grids
+- Glow effects
+- Dynamic backgrounds
+
+==================================================
+HOME PAGE — MASSIVE EXPANSION
+==================================================
+
+Make HOME page much longer and premium.
+
+ADD THESE NEW SECTIONS:
+
+1. TRUSTED BY GLOBAL BRANDS
+- animated company logos
+- infinite marquee slider
+- glowing hover effects
+
+2. INTERACTIVE AMERICA ROUTE MAP
+- animated US map
+- moving route lines
+- glowing shipment paths
+- active city points
+- animated logistics network
+
+3. REALTIME LOGISTICS DASHBOARD
+- futuristic analytics UI
+- animated graphs
+- delivery stats
+- active fleet monitoring
+- glowing data cards
+
+4. COMPANY ACHIEVEMENTS
+- awards
+- certifications
+- safety milestones
+- animated counters
+- timeline reveal animation
+
+5. HOW WE WORK
+- step-by-step animated process
+- timeline scroll animation
+- truck movement between steps
+
+6. VIDEO SECTION
+- cinematic trucking video banner
+- dark overlay
+- animated play button
+
+7. ADVANCED PARALLAX SECTION
+- layered moving backgrounds
+- road perspective animation
+- truck speed illusion
+
+8. INDUSTRIES WE SERVE
+- retail
+- construction
+- medical
+- food
+- manufacturing
+- automotive
+
+Create premium animated cards.
+
+9. CLIENT SUCCESS STORIES
+- large case-study style layout
+- animated reveal blocks
+- before/after metrics
+
+10. NEWS & INSIGHTS
+- modern blog preview cards
+- hover animations
+- glowing borders
+
+11. LARGE FINAL CTA
+Huge cinematic call-to-action section with:
+- moving gradients
+- animated background lines
+- premium typography
+- magnetic buttons
+
+==================================================
+ABOUT PAGE — MASSIVE EXPANSION
+==================================================
+
+Make ABOUT page feel like a premium corporate documentary.
+
+ADD:
+
+1. COMPANY HISTORY TIMELINE
+- animated horizontal timeline
+- yearly milestones
+- glowing progress line
+
+2. OUR JOURNEY SECTION
+- storytelling layout
+- cinematic image transitions
+- parallax movement
+
+3. CEO MESSAGE SECTION
+- premium editorial layout
+- animated text reveal
+
+4. CORE VALUES GRID
+- large interactive cards
+- hover expansion animation
+
+5. NATIONAL COVERAGE SECTION
+- animated USA logistics map
+- active routes visualization
+
+6. SAFETY & COMPLIANCE
+- certifications
+- security standards
+- animated badges
+
+7. TECHNOLOGY SECTION
+- logistics software showcase
+- dispatch system UI
+- tracking technology
+- glowing futuristic panels
+
+8. TEAM & CULTURE
+- employee showcase
+- animated team cards
+- company environment gallery
+
+9. COMPANY STATS
+- huge animated numbers
+- graph animations
+- floating metric cards
+
+10. CORPORATE GALLERY
+- premium masonry gallery
+- hover zoom effects
+- cinematic transitions
+
+==================================================
+DRIVERS PAGE — MASSIVE EXPANSION
+==================================================
+
+This page should feel like a premium truck driver recruitment platform.
+
+ADD:
+
+1. DRIVER LIFE HERO
+- cinematic truck highway scene
+- animated background motion
+
+2. WHY DRIVERS LOVE US
+- large benefit cards
+- animated hover effects
+
+3. DRIVER SUCCESS STORIES
+- testimonial videos
+- animated slider
+
+4. DRIVER EARNINGS SECTION
+- animated salary comparison charts
+- bonus structure cards
+
+5. MODERN FLEET SHOWCASE
+- premium truck gallery
+- 360-style interactions
+- glowing vehicle cards
+
+6. DRIVER SUPPORT SYSTEM
+- dispatch support
+- maintenance
+- insurance
+- training
+
+7. DRIVER TIMELINE
+- onboarding process
+- animated journey line
+
+8. ROUTES & DESTINATIONS
+- animated map routes
+- active shipment visualization
+
+9. DRIVER BENEFITS COMPARISON
+- interactive comparison table
+- hover highlights
+
+10. FAQ SECTION
+- animated accordion
+- smooth open transitions
+
+11. LARGE APPLICATION CTA
+- premium glowing section
+- animated background particles
+
+==================================================
+CONTACT PAGE — MASSIVE EXPANSION
+==================================================
+
+Make CONTACT page much more immersive.
+
+ADD:
+
+1. INTERACTIVE CONTACT HERO
+- moving background
+- animated gradients
+- logistics visuals
+
+2. OFFICE LOCATIONS
+- animated cards
+- multiple office branches
+- hover glow effects
+
+3. INTERACTIVE MAP
+- dark premium style
+- animated route lines
+- active office pins
+
+4. DISPATCH CENTER SHOWCASE
+- futuristic operations center UI
+- animated dashboards
+
+5. CONTACT OPTIONS GRID
+- sales
+- dispatch
+- support
+- partnerships
+- careers
+
+Each with animated icons.
+
+6. RESPONSE PROCESS
+- animated timeline
+- how inquiries are handled
+
+7. LIVE SUPPORT SECTION
+- fake live chat UI
+- animated online indicators
+
+8. BUSINESS HOURS SECTION
+- premium schedule cards
+- glowing indicators
+
+9. FAQ CONTACT SECTION
+- animated accordions
+
+10. FINAL LARGE CTA
+- cinematic full-width section
+- animated gradients
+- glowing buttons
+- floating particles
+
+==================================================
+GLOBAL ANIMATION UPGRADES
+==================================================
+
+Add MUCH MORE animations everywhere:
+
+- scroll-triggered reveals
+- text split animations
+- blur-to-clear transitions
+- parallax images
+- sticky scrolling sections
+- horizontal scroll galleries
+- mouse-follow lights
+- glowing hover borders
+- animated grids
+- floating particles
+- moving gradients
+- dynamic lighting effects
+- cinematic page transitions
+- loader animation
+- smooth fade between pages
+
+==================================================
+PREMIUM DETAILS
+==================================================
+
+Add:
+- loading screen
+- scroll progress indicator
+- custom animated cursor
+- page transition overlay
+- subtle sound-ready interactions
+- premium hover physics
+- glass morphism
+- neon glow accents
+- animated SVG lines
+- moving road textures
+
+The website should feel:
+- futuristic
+- cinematic
+- interactive
+- immersive
+- high-budget
+- premium American logistics brand
+
+NOT simple.
+NOT minimal.
+NOT empty.
+
+Make every page feel rich, detailed, and visually alive.

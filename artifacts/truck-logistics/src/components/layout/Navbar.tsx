@@ -3,12 +3,14 @@ import { Link, useLocation } from "wouter";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/hooks/useTheme";
+import { useApplicationModal } from "@/contexts/ApplicationModalContext";
 
 export const Navbar = () => {
   const [location] = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { openModal } = useApplicationModal();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -96,6 +98,17 @@ export const Navbar = () => {
               )}
             </AnimatePresence>
           </motion.button>
+
+          <motion.button
+            data-testid="button-apply-now-nav"
+            onClick={openModal}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="px-5 py-2.5 rounded-full border-2 border-primary text-primary text-sm font-bold tracking-widest hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+          >
+            APPLY NOW
+          </motion.button>
+
           <Link
             href="/contact"
             className="px-6 py-3 bg-primary text-primary-foreground text-sm font-bold tracking-widest hover:bg-primary/90 transition-colors shadow-[0_0_20px_rgba(193,18,31,0.3)] hover:shadow-[0_0_30px_rgba(193,18,31,0.5)]"
@@ -144,10 +157,17 @@ export const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+            <button
+              data-testid="button-apply-now-mobile"
+              onClick={() => { setMobileMenuOpen(false); openModal(); }}
+              className="px-8 py-4 rounded-full border-2 border-primary text-primary font-bold tracking-widest hover:bg-primary hover:text-primary-foreground transition-all"
+            >
+              APPLY NOW
+            </button>
             <Link
               href="/contact"
               onClick={() => setMobileMenuOpen(false)}
-              className="mt-8 px-8 py-4 bg-primary text-primary-foreground font-bold tracking-widest"
+              className="px-8 py-4 bg-primary text-primary-foreground font-bold tracking-widest"
             >
               GET QUOTE
             </Link>

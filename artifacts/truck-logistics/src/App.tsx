@@ -7,6 +7,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import Lenis from "@studio-freight/lenis";
 
 import { ThemeProvider } from "@/hooks/useTheme";
+import { ApplicationModalProvider } from "@/contexts/ApplicationModalContext";
+import { DriverApplicationModal } from "@/components/ui/DriverApplicationModal";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { CustomCursor } from "@/components/ui/CustomCursor";
@@ -85,21 +87,24 @@ function App() {
 
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <div className="min-h-[100dvh] flex flex-col bg-background text-foreground overflow-x-hidden transition-colors duration-300">
-              <LoadingScreen />
-              <CustomCursor />
-              <ScrollProgress />
-              <Navbar />
-              <Router />
-              <Footer />
-            </div>
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
+      <ApplicationModalProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <div className="min-h-[100dvh] flex flex-col bg-background text-foreground overflow-x-hidden transition-colors duration-300">
+                <LoadingScreen />
+                <CustomCursor />
+                <ScrollProgress />
+                <Navbar />
+                <Router />
+                <Footer />
+              </div>
+              <DriverApplicationModal />
+            </WouterRouter>
+            <Toaster />
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ApplicationModalProvider>
     </ThemeProvider>
   );
 }

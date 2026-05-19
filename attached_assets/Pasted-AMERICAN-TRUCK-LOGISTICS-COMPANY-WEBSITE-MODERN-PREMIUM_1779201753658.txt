@@ -1,0 +1,518 @@
+AMERICAN TRUCK LOGISTICS COMPANY WEBSITE
+MODERN • PREMIUM • CINEMATIC • MULTI PAGE
+
+Sen senior full-stack developer, award-winning UI/UX designer va motion designer sifatida ishlaysan.
+
+Menga American trucking & logistics kompaniyasi uchun ultra premium MULTI-PAGE website yarat.
+
+Website oddiy trucking template emas.
+Style — cinematic, powerful, futuristic American logistics company vibe’da bo‘lsin.
+
+Logo’dagi:
+
+movement
+highway
+transport
+speed
+trust
+
+elementlari butun website dizaynida sezilib tursin.
+
+Website premium startup + logistics corporation ko‘rinishida bo‘lsin.
+
+WEBSITE STRUCTURE
+
+Website multipage bo‘lsin.
+
+Pages:
+
+HOME
+ABOUT
+DRIVERS
+CONTACT
+
+Navbar orqali alohida sahifalarga o‘tilsin.
+
+TECH STACK
+
+Use:
+
+React
+Vite
+TailwindCSS
+Framer Motion
+GSAP
+Lenis Smooth Scroll
+React Router DOM
+Three.js (light effects)
+React Icons
+Shadcn UI
+
+Code professional architecture’da yozilsin.
+
+DESIGN STYLE
+
+Website mood:
+
+American trucking industry
+premium logistics
+modern corporate
+cinematic
+dark luxury
+futuristic transport
+
+Inspiration:
+
+Tesla
+Volvo Trucks
+Freightliner
+SpaceX style UI
+Awwwards websites
+
+NO:
+
+old corporate look
+simple templates
+flat boring UI
+COLOR SYSTEM
+
+Main palette:
+
+Deep Navy → #07152F
+Premium Red → #C1121F
+Matte Black → #0B0F19
+Soft White → #F8FAFC
+Steel Gray → #94A3B8
+
+Use:
+
+gradients
+glassmorphism
+glowing effects
+blurred layers
+animated backgrounds
+GLOBAL WEBSITE FEATURES
+
+Add throughout the site:
+
+smooth scrolling
+cinematic transitions
+animated section reveals
+parallax movement
+glowing hover effects
+animated gradients
+mouse-follow glow
+floating particles
+blur transitions
+premium shadows
+
+Website alive ko‘rinsin.
+
+NAVBAR
+
+Sticky navbar.
+
+Features:
+
+transparent on top
+dark glass effect on scroll
+animated underline hover
+smooth transitions
+active page indicator
+
+Menu:
+
+HOME
+ABOUT
+DRIVERS
+CONTACT
+
+Right side:
+premium CTA button:
+“Get Quote”
+
+Mobile:
+animated hamburger menu.
+
+HOME PAGE
+HERO SECTION
+
+Ultra cinematic hero section.
+
+Background:
+
+animated highway lines
+moving particles
+glowing road effect
+dark gradient overlay
+subtle moving lights
+
+LEFT SIDE:
+
+Big bold text:
+
+“America’s Trusted Logistics Partner”
+
+Second line:
+“Driven By Precision”
+
+Subtext:
+Modern freight transportation solutions across the United States with speed, safety, and reliability.
+
+Buttons:
+
+Explore Services
+Contact Us
+
+Buttons animated:
+
+glow hover
+magnetic effect
+smooth scaling
+
+RIGHT SIDE:
+
+Modern American truck visual.
+
+Use:
+
+cinematic truck image
+moving light trails
+subtle floating animation
+smoke/light effects
+HOME PAGE SECTIONS
+SERVICES SECTION
+
+Premium glass cards.
+
+Services:
+
+Freight Transportation
+Long Haul Delivery
+Refrigerated Logistics
+Heavy Cargo
+Fleet Solutions
+Nationwide Shipping
+
+Card hover:
+
+tilt animation
+glow border
+icon movement
+background reveal
+WHY CHOOSE US
+
+Animated statistics.
+
+Examples:
+
+15+ Years Experience
+1200+ Deliveries
+99% Client Satisfaction
+24/7 Dispatch Support
+
+Use animated counters.
+
+Background:
+moving gradient mesh.
+
+FLEET SECTION
+
+Premium truck showcase.
+
+Dark cards with:
+
+hover zoom
+reflections
+subtle animations
+
+Include:
+
+truck type
+route coverage
+capacity info
+
+Horizontal slider animation bo‘lsin.
+
+TESTIMONIALS
+
+Modern animated slider.
+
+Glassmorphism cards.
+
+Auto-slide animation.
+
+CTA SECTION
+
+Large cinematic CTA.
+
+Text:
+“Ready To Move Your Business Forward?”
+
+Button:
+“Get Started”
+
+Background:
+animated road/grid effects.
+
+ABOUT PAGE
+
+Premium corporate about page.
+
+Style:
+minimal + cinematic.
+
+Sections:
+
+HERO
+
+Title:
+“Built On Trust. Driven By Excellence.”
+
+Background:
+dark cinematic transport visuals.
+
+COMPANY STORY
+
+Split layout.
+
+Left:
+text.
+
+Right:
+animated image/cards.
+
+Timeline animation qo‘sh.
+
+MISSION & VISION
+
+2 premium cards.
+
+Hover glow effect.
+
+COMPANY VALUES
+
+Animated icon cards:
+
+Safety
+Precision
+Reliability
+Innovation
+Transparency
+TEAM SECTION
+
+Modern executive style cards.
+
+Minimal premium style.
+
+DRIVERS PAGE
+
+IMPORTANT PAGE.
+
+American trucking recruitment style’da bo‘lsin.
+
+HERO
+
+Title:
+“Drive With The Best”
+
+Subtext:
+Join one of America’s fastest-growing logistics companies.
+
+Background:
+moving highway animation.
+
+BENEFITS SECTION
+
+Cards:
+
+Competitive Pay
+Flexible Routes
+Modern Fleet
+Weekly Bonuses
+24/7 Support
+Insurance Coverage
+
+Hover animation qo‘sh.
+
+DRIVER REQUIREMENTS
+
+Timeline/checklist design.
+
+Requirements:
+
+CDL License
+Clean Driving Record
+2+ Years Experience
+Responsible & Professional
+APPLICATION FORM
+
+Premium dark form.
+
+Fields:
+
+Full Name
+Email
+Phone
+Experience
+CDL Type
+Message
+
+Animated inputs:
+
+glow focus
+smooth transitions
+
+Success animation bo‘lsin.
+
+CONTACT PAGE
+
+Premium modern contact page.
+
+HERO
+
+Title:
+“Let’s Move Forward Together”
+
+Background:
+animated logistics visuals.
+
+CONTACT INFO
+
+Cards:
+
+Phone
+Email
+Office Address
+Dispatch Center
+
+Glassmorphism design.
+
+CONTACT FORM
+
+Fields:
+
+Name
+Company
+Email
+Phone
+Message
+
+Features:
+
+animated focus states
+glow borders
+loading submit button
+success animation
+MAP SECTION
+
+Dark styled embedded map.
+
+FOOTER
+
+Premium dark footer.
+
+Include:
+
+logo
+navigation
+socials
+copyright
+animated divider line
+ANIMATIONS
+
+VERY IMPORTANT.
+
+Use:
+
+Framer Motion
+GSAP ScrollTrigger
+Lenis smooth scrolling
+
+Animations:
+
+fade up
+stagger reveal
+blur reveal
+parallax
+hover glow
+floating movement
+smooth page transitions
+
+No sudden animations.
+
+Everything smooth and cinematic bo‘lsin.
+
+TYPOGRAPHY
+
+Use:
+
+Space Grotesk
+or
+Sora
+
+Style:
+
+bold headings
+clean spacing
+premium corporate typography
+UI DETAILS
+
+Add:
+
+custom cursor
+animated scroll progress bar
+glowing buttons
+subtle noise texture
+glassmorphism
+gradient borders
+premium shadows
+PERFORMANCE
+
+Optimize:
+
+lazy loading
+responsive images
+smooth FPS
+mobile optimization
+
+Animations mobile’da lighter bo‘lsin.
+
+RESPONSIVE DESIGN
+
+Website:
+
+desktop
+tablet
+mobile
+
+uchun perfect responsive bo‘lsin.
+
+FOLDER STRUCTURE
+
+Professional architecture:
+
+/components
+/sections
+/pages
+/hooks
+/utils
+/assets
+/animations
+
+Reusable component system yarat.
+
+FINAL OUTPUT
+
+Generate:
+
+FULL production-ready frontend
+all pages
+routing
+animations
+responsive design
+premium UI
+reusable components
+clean code architecture
+
+Website Awwwards quality’da bo‘lsin.

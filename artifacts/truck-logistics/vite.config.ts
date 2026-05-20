@@ -42,6 +42,10 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    sourcemap: false,
+  },
+  esbuild: {
+    legalComments: "none",
   },
   server: {
     port,

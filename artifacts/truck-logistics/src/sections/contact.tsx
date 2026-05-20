@@ -79,7 +79,27 @@ export const ContactMap = () => (
 export const ContactForm = () => {
   const { register, handleSubmit, reset } = useForm();
   const [submitted, setSubmitted] = useState(false);
-  const onSubmit = (data: any) => { setSubmitted(true); setTimeout(() => { setSubmitted(false); reset(); }, 3000); };
+  const [error, setError] = useState<string | null>(null);
+
+  const onSubmit = async (data: Record<string, string>) => {
+    setError(null);
+    try {
+      const { submitContactMessage } = await import("@/lib/api");
+      await submitContactMessage({
+        name: data.name,
+        company: data.company,
+        email: data.email,
+        message: `[${data.service}] ${data.message ?? ""}`.trim(),
+      });
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        reset();
+      }, 3000);
+    } catch {
+      setError("Failed to send message. Please try again.");
+    }
+  };
 
   return (
     <section className="py-24 bg-background">
@@ -115,6 +135,9 @@ export const ContactForm = () => {
               <label className="text-xs font-bold tracking-widest text-muted-foreground">MESSAGE</label>
               <textarea rows={5} {...register("message")} className="w-full bg-background border border-white/10 px-4 py-3 focus:outline-none focus:border-primary transition-colors resize-none text-foreground" />
             </div>
+            {error && (
+              <p className="text-sm text-destructive font-semibold tracking-wide">{error}</p>
+            )}
             <button type="submit" className="w-full py-4 bg-primary text-primary-foreground font-bold tracking-widest hover:bg-primary/90 transition-all">
               {submitted ? "MESSAGE SENT SUCCESSFULLY" : "SEND INQUIRY"}
             </button>

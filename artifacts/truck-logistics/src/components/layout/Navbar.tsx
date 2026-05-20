@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/hooks/useTheme";
 import { useApplicationModal } from "@/contexts/ApplicationModalContext";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { Logo } from "@/components/layout/Logo";
 
 export const Navbar = () => {
   const [location] = useLocation();
@@ -11,6 +14,8 @@ export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { openModal } = useApplicationModal();
+
+  useBodyScrollLock(mobileMenuOpen);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,12 +25,92 @@ export const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location]);
+
   const navLinks = [
     { name: "HOME", path: "/" },
     { name: "ABOUT", path: "/about" },
     { name: "DRIVERS", path: "/drivers" },
     { name: "CONTACT", path: "/contact" },
   ];
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  const mobileMenu =
+    typeof document !== "undefined"
+      ? createPortal(
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                key="mobile-menu"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="fixed inset-x-0 bottom-0 top-[5.5rem] z-[60] flex flex-col bg-background md:hidden"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Navigation menu"
+              >
+                <motion.nav
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 16 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex h-full flex-col"
+                >
+                  <ul className="flex flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-6 py-4">
+                    {navLinks.map((link, i) => (
+                      <motion.li
+                        key={link.name}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.05 + i * 0.05 }}
+                      >
+                        <Link
+                          href={link.path}
+                          onClick={closeMobileMenu}
+                          className={`block rounded-xl px-4 py-4 text-2xl font-bold tracking-widest transition-colors ${
+                            location === link.path
+                              ? "bg-primary/10 text-primary"
+                              : "text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {link.name}
+                        </Link>
+                      </motion.li>
+                    ))}
+                  </ul>
+
+                  <div className="shrink-0 space-y-3 border-t border-border px-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+                    <button
+                      type="button"
+                      data-testid="button-apply-now-mobile"
+                      onClick={() => {
+                        closeMobileMenu();
+                        openModal();
+                      }}
+                      className="w-full rounded-full border-2 border-primary px-8 py-4 text-center font-bold tracking-widest text-primary transition-all hover:bg-primary hover:text-primary-foreground"
+                    >
+                      APPLY NOW
+                    </button>
+                    <Link
+                      href="/contact"
+                      onClick={closeMobileMenu}
+                      className="block w-full rounded-full bg-primary px-8 py-4 text-center font-bold tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
+                    >
+                      GET IN TOUCH
+                    </Link>
+                  </div>
+                </motion.nav>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body,
+        )
+      : null;
 
   return (
     <header
@@ -35,18 +120,13 @@ export const Navbar = () => {
           : "bg-transparent py-6"
       }`}
     >
-      <div className="container mx-auto px-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group cursor-pointer z-50">
-          <div className="w-8 h-8 bg-primary rotate-45 flex items-center justify-center transition-transform duration-500 group-hover:rotate-180">
-            <div className="w-3 h-3 bg-background" />
-          </div>
-          <span className="text-xl font-bold tracking-tighter text-foreground">
-            AM<span className="text-primary">TRUCK</span>
-          </span>
+      <div className="container relative z-[51] mx-auto flex items-center justify-between px-6">
+        <Link href="/" className="group flex cursor-pointer items-center" onClick={closeMobileMenu}>
+          <Logo className="h-12 w-auto transition-opacity duration-300 group-hover:opacity-90 md:h-14" />
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
             <Link
               key={link.name}
@@ -66,12 +146,12 @@ export const Navbar = () => {
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden items-center gap-3 md:flex">
           <motion.button
             data-testid="button-theme-toggle"
             onClick={toggleTheme}
             whileTap={{ scale: 0.9 }}
-            className="w-10 h-10 flex items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-primary transition-colors duration-300"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors duration-300 hover:border-primary hover:text-foreground"
             aria-label="Toggle theme"
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -104,76 +184,44 @@ export const Navbar = () => {
             onClick={openModal}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="px-5 py-2.5 rounded-full border-2 border-primary text-primary text-sm font-bold tracking-widest hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+            className="rounded-full border-2 border-primary px-5 py-2.5 text-sm font-bold tracking-widest text-primary transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
           >
             APPLY NOW
           </motion.button>
 
           <Link
             href="/contact"
-            className="px-6 py-3 bg-primary text-primary-foreground text-sm font-bold tracking-widest hover:bg-primary/90 transition-colors shadow-[0_0_20px_rgba(193,18,31,0.3)] hover:shadow-[0_0_30px_rgba(193,18,31,0.5)]"
+            className="bg-primary px-6 py-3 text-sm font-bold tracking-widest text-primary-foreground shadow-[0_0_20px_rgba(193,18,31,0.3)] transition-colors hover:bg-primary/90 hover:shadow-[0_0_30px_rgba(193,18,31,0.5)]"
           >
-            GET QUOTE
+            GET IN TOUCH
           </Link>
         </div>
 
         {/* Mobile Toggle */}
-        <div className="md:hidden flex items-center gap-3 z-50">
+        <div className="flex items-center gap-3 md:hidden">
           <button
+            type="button"
             data-testid="button-theme-toggle-mobile"
             onClick={toggleTheme}
-            className="w-9 h-9 flex items-center justify-center rounded-full border border-border text-muted-foreground"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground"
             aria-label="Toggle theme"
           >
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <button
-            className="text-foreground"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            type="button"
+            data-testid="button-mobile-menu"
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-foreground"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
-            {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Nav */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 bg-background/95 backdrop-blur-lg flex flex-col items-center justify-center gap-8 z-40 md:hidden"
-          >
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`text-2xl font-bold tracking-widest ${
-                  location === link.path ? "text-primary" : "text-foreground"
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-            <button
-              data-testid="button-apply-now-mobile"
-              onClick={() => { setMobileMenuOpen(false); openModal(); }}
-              className="px-8 py-4 rounded-full border-2 border-primary text-primary font-bold tracking-widest hover:bg-primary hover:text-primary-foreground transition-all"
-            >
-              APPLY NOW
-            </button>
-            <Link
-              href="/contact"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-8 py-4 bg-primary text-primary-foreground font-bold tracking-widest"
-            >
-              GET QUOTE
-            </Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {mobileMenu}
     </header>
   );
 };

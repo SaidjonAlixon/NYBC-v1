@@ -2,22 +2,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { Truck, ShieldCheck, Globe, Clock, Package, BarChart3, Star, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
+import { HeroUsaMap } from "@/components/hero/HeroUsaMap";
+import { useApplicationModal } from "@/contexts/ApplicationModalContext";
 
-export const HeroSection = () => (
-  <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-    <div className="absolute inset-0 z-0">
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-transparent z-10" />
-      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary))_0%,transparent_50%)] bg-[length:100%_100%] bg-center" />
-      {/* Animated dots */}
-      <div className="absolute inset-0 z-0">
-        {[...Array(20)].map((_, i) => (
-          <div key={i} className="absolute w-1 h-1 bg-primary rounded-full animate-float opacity-50" style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 5}s` }} />
-        ))}
-      </div>
+export const HeroSection = () => {
+  const { openModal } = useApplicationModal();
+
+  return (
+  <section className="relative min-h-[90vh] flex items-center justify-center">
+    <div className="absolute inset-0 z-0 bg-background" />
+    <div
+      className="pointer-events-none absolute inset-0 z-0 opacity-60 dark:opacity-100"
+      aria-hidden
+    >
+      <div className="absolute right-0 top-1/2 h-[70%] w-[55%] -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.06)_0%,transparent_68%)] dark:bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12)_0%,transparent_70%)]" />
     </div>
-    
-    <div className="container relative z-10 px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-      <motion.div 
+
+    <div className="container relative z-10 grid grid-cols-1 items-center gap-10 px-6 lg:grid-cols-2 lg:gap-6 xl:gap-10">
+      <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
@@ -40,34 +42,31 @@ export const HeroSection = () => (
         </p>
         
         <div className="flex flex-wrap items-center gap-4 mt-4">
-          <Link href="/contact" className="px-8 py-4 bg-primary text-primary-foreground font-bold tracking-widest hover:bg-primary/90 transition-all hover:scale-105 shadow-[0_0_20px_rgba(193,18,31,0.3)]">
-            GET A FREE QUOTE
-          </Link>
+          <button
+            type="button"
+            onClick={openModal}
+            className="px-8 py-4 bg-primary text-primary-foreground font-bold tracking-widest hover:bg-primary/90 transition-all hover:scale-105 shadow-[0_0_20px_rgba(193,18,31,0.3)]"
+          >
+            Apply Now
+          </button>
           <Link href="/contact" className="px-8 py-4 border border-border bg-background/50 backdrop-blur text-foreground font-bold tracking-widest hover:border-primary/50 transition-all hover:bg-primary/10 hover:scale-105">
-            CALL DISPATCH
+            Get in touch
           </Link>
         </div>
       </motion.div>
-      
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1, delay: 0.4 }}
-        className="hidden lg:block relative h-[600px]"
+        transition={{ duration: 1, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="relative hidden min-h-[600px] overflow-visible lg:flex lg:items-center lg:justify-center lg:pr-0"
       >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px]">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent blur-[100px] rounded-full" />
-            <svg viewBox="0 0 800 400" className="w-full h-full drop-shadow-[0_0_30px_rgba(193,18,31,0.5)]">
-              <path d="M100,200 L300,200 L350,100 L700,100 L750,250 L100,250 Z" fill="none" stroke="hsl(var(--primary))" strokeWidth="4" className="animate-[dash_3s_linear_infinite]" />
-              <rect x="200" y="230" width="60" height="60" rx="30" fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="4" />
-              <rect x="600" y="230" width="60" height="60" rx="30" fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="4" />
-              <line x1="0" y1="280" x2="800" y2="280" stroke="hsl(var(--primary))" strokeWidth="2" strokeDasharray="20 10" className="opacity-50" />
-            </svg>
-          </div>
+        <HeroUsaMap />
       </motion.div>
     </div>
   </section>
-);
+  );
+};
 
 export const MarqueeSection = () => {
   const companies = ["WALMART LOGISTICS", "HOME DEPOT SUPPLY", "AMAZON FREIGHT", "TARGET CORP", "TESLA MOTORS", "COSTCO WHOLESALE", "FORD SUPPLY CHAIN", "BOEING FREIGHT", "CATERPILLAR", "3M LOGISTICS", "JOHN DEERE", "GENERAL MILLS"];
@@ -250,14 +249,56 @@ export const IndustriesSection = () => {
 
 export const RouteMapSection = () => {
   return (
-    <section className="py-32 bg-background relative overflow-hidden">
-      <div className="container px-6 mx-auto relative z-10 text-center">
-        <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">OUR NATIONAL COVERAGE</h2>
-        <div className="w-20 h-1 bg-primary mx-auto mb-16" />
-        <div className="h-[400px] md:h-[600px] w-full bg-card/50 rounded-2xl border border-white/5 flex items-center justify-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px] opacity-20" />
-          <p className="text-muted-foreground font-bold tracking-widest">[ INTERACTIVE USA MAP ]</p>
+    <section className="relative overflow-hidden bg-background py-32">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-40 dark:opacity-60"
+        aria-hidden
+      >
+        <div className="absolute left-1/2 top-1/2 h-[70%] w-[80%] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.08)_0%,transparent_70%)]" />
+      </div>
+
+      <div className="container relative z-10 mx-auto px-6">
+        <div className="mb-12 text-center md:mb-16">
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="mb-4 text-3xl font-bold tracking-tighter md:text-5xl"
+          >
+            OUR NATIONAL COVERAGE
+          </motion.h2>
+          <div className="mx-auto mb-6 h-1 w-20 bg-primary" />
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mx-auto max-w-2xl text-muted-foreground"
+          >
+            NYBC Trucking connects coast-to-coast through eight strategic hubs — with live freight lanes
+            across all 48 continental states.
+          </motion.p>
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          className="relative overflow-hidden rounded-2xl border border-border bg-card/40 shadow-[0_24px_80px_rgba(0,0,0,0.12)] dark:border-white/10 dark:bg-card/30 dark:shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
+        >
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.15] dark:opacity-20"
+            aria-hidden
+            style={{
+              backgroundImage:
+                "linear-gradient(hsl(var(--border)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px)",
+              backgroundSize: "40px 40px",
+            }}
+          />
+          <HeroUsaMap variant="coverage" />
+        </motion.div>
       </div>
     </section>
   );

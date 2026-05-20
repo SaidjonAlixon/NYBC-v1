@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Logo } from "@/components/layout/Logo";
 
 export const LoadingScreen = () => {
   const [loading, setLoading] = useState(true);
@@ -32,14 +33,9 @@ export const LoadingScreen = () => {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex items-center gap-4 mb-12"
+            className="flex w-full items-center justify-center mb-12"
           >
-            <div className="w-12 h-12 bg-primary rotate-45 flex items-center justify-center">
-              <div className="w-4 h-4 bg-background" />
-            </div>
-            <span className="text-4xl font-bold tracking-tighter text-foreground">
-              AM<span className="text-primary">TRUCK</span>
-            </span>
+            <Logo className="h-20 md:h-24 w-auto" />
           </motion.div>
 
           <div className="w-64 h-1 bg-muted rounded-full overflow-hidden">

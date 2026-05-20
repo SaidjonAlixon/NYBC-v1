@@ -221,10 +221,33 @@ export const DriverFaq = () => (
 export const ApplicationForm = () => {
   const { register, handleSubmit, reset } = useForm();
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const onSubmit = (data: any) => {
-    setSubmitted(true);
-    setTimeout(() => { setSubmitted(false); reset(); }, 3000);
+  const onSubmit = async (data: Record<string, string>) => {
+    setError(null);
+    const parts = data.name.trim().split(/\s+/);
+    const firstName = parts[0] ?? data.name;
+    const lastName = parts.slice(1).join(" ") || "-";
+
+    try {
+      const { submitDriverApplication } = await import("@/lib/api");
+      await submitDriverApplication({
+        position: data.route,
+        firstName,
+        lastName,
+        email: data.email,
+        phone: data.phone,
+        cdlType: "Not specified",
+        experience: data.experience,
+      });
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        reset();
+      }, 3000);
+    } catch {
+      setError("Failed to submit application. Please try again.");
+    }
   };
 
   return (
@@ -264,6 +287,9 @@ export const ApplicationForm = () => {
               </select>
             </div>
           </div>
+          {error && (
+            <p className="text-sm text-destructive font-semibold tracking-wide">{error}</p>
+          )}
           <button type="submit" className="w-full py-4 bg-primary text-primary-foreground font-bold tracking-widest hover:bg-primary/90 transition-all mt-4">
             {submitted ? "APPLICATION RECEIVED" : "SUBMIT APPLICATION"}
           </button>

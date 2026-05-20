@@ -4,14 +4,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
-import Lenis from "@studio-freight/lenis";
 
 import { ThemeProvider } from "@/hooks/useTheme";
+import { LenisProvider, useLenisControl } from "@/contexts/LenisContext";
 import { ApplicationModalProvider } from "@/contexts/ApplicationModalContext";
 import { DriverApplicationModal } from "@/components/ui/DriverApplicationModal";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { CustomCursor } from "@/components/ui/CustomCursor";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 
@@ -25,11 +24,13 @@ const queryClient = new QueryClient();
 
 function PageTransition({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  
-  // Scroll to top on location change
+  const lenis = useLenisControl();
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location]);
+    lenis?.scrollToTop();
+    const id = requestAnimationFrame(() => lenis?.scrollToTop());
+    return () => cancelAnimationFrame(id);
+  }, [location, lenis]);
 
   return (
     <AnimatePresence mode="wait">
@@ -62,38 +63,15 @@ function Router() {
 }
 
 function App() {
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 2,
-    });
-
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
-
   return (
     <ThemeProvider>
+      <LenisProvider>
       <ApplicationModalProvider>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
               <div className="min-h-[100dvh] flex flex-col bg-background text-foreground overflow-x-hidden transition-colors duration-300">
                 <LoadingScreen />
-                <CustomCursor />
                 <ScrollProgress />
                 <Navbar />
                 <Router />
@@ -105,6 +83,7 @@ function App() {
           </TooltipProvider>
         </QueryClientProvider>
       </ApplicationModalProvider>
+      </LenisProvider>
     </ThemeProvider>
   );
 }

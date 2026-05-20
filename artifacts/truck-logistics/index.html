@@ -3,21 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>American Truck Logistics</title>
-    <meta name="description" content="American Truck Logistics — built on Replit. Update this description to reflect the app." />
+    <title>NYBC TRUCKING</title>
+    <meta name="description" content="NYBC Trucking — the advanced choice for freight transportation and logistics across America. Reliable nationwide cargo delivery you can trust." />
     <meta name="robots" content="index, follow" />
-    <meta property="og:title" content="American Truck Logistics" />
-    <meta property="og:description" content="American Truck Logistics — built on Replit. Update this description to reflect the app." />
+    <meta property="og:title" content="NYBC Trucking" />
+    <meta property="og:description" content="NYBC Trucking — the advanced choice for freight transportation and logistics across America. Reliable nationwide cargo delivery you can trust." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="American Truck Logistics" />
-    <meta name="twitter:description" content="American Truck Logistics — built on Replit. Update this description to reflect the app." />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="twitter:title" content="NYBC Trucking" />
+    <meta name="twitter:description" content="NYBC Trucking — the advanced choice for freight transportation and logistics across America. Reliable nationwide cargo delivery you can trust." />
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="any" />
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="512x512" />
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/favicon.png" sizes="512x512" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
+    <script>
+      (function () {
+        var t = localStorage.getItem("atl-theme");
+        if (t !== "dark") document.documentElement.classList.remove("dark");
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

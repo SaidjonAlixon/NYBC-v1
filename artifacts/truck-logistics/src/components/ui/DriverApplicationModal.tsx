@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Truck, User, Clock, FileText, Check, ChevronLeft, ChevronRight, Upload, Phone, Mail, MapPin } from "lucide-react";
+import { X, Truck, User, Clock, FileText, Check, ChevronLeft, ChevronRight, Upload, Phone, Mail, MapPin, TrendingUp, type LucideIcon } from "lucide-react";
 import { useApplicationModal } from "@/contexts/ApplicationModalContext";
+import { useLenisControl } from "@/contexts/LenisContext";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { Logo } from "@/components/layout/Logo";
+import { cn } from "@/lib/utils";
 
 const steps = [
   { id: 1, label: "POSITION", icon: Truck },
@@ -10,21 +14,29 @@ const steps = [
   { id: 4, label: "REVIEW", icon: FileText },
 ];
 
-const positions = [
+/** Full-width section rule — visible in dark mode like light-theme reference */
+function ModalDivider() {
+  return <div role="separator" aria-hidden className="h-px w-full shrink-0 bg-border dark:bg-white/[0.14]" />;
+}
+
+const positions: { title: string; desc: string; tags: string[]; icon: LucideIcon }[] = [
   {
     title: "Company Driver",
     desc: "Drive our trucks and get paid per mile with full benefits",
     tags: ["Weekly Pay", "Modern Fleet", "Home Time"],
+    icon: Truck,
   },
   {
     title: "Owner Operator",
     desc: "Bring your own truck and enjoy maximum earnings",
     tags: ["High % Pay", "Fuel Cards", "Dispatch Support", "Flexibility"],
+    icon: Truck,
   },
   {
-    title: "Lease Driver",
-    desc: "Lease a truck from our fleet with flexible terms",
-    tags: ["Low Down Payment", "Maintenance Included", "Purchase Option"],
+    title: "Investor",
+    desc: "Partner with us and invest in fleet growth with transparent returns",
+    tags: ["Fleet Growth", "Partnership", "Transparent Returns"],
+    icon: TrendingUp,
   },
 ];
 
@@ -43,8 +55,11 @@ interface FormData {
 
 export function DriverApplicationModal() {
   const { isOpen, closeModal } = useApplicationModal();
+  const lenis = useLenisControl();
+  useBodyScrollLock(isOpen);
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>({
     position: "",
     firstName: "",
@@ -60,15 +75,18 @@ export function DriverApplicationModal() {
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      lenis?.stop();
       setStep(1);
       setSubmitted(false);
+      setSubmitError(null);
       setForm({ position: "", firstName: "", lastName: "", email: "", phone: "", address: "", cdlType: "", experience: "", licenseFile: "", medicalCard: "" });
     } else {
-      document.body.style.overflow = "";
+      lenis?.start();
     }
-    return () => { document.body.style.overflow = ""; };
-  }, [isOpen]);
+    return () => {
+      lenis?.start();
+    };
+  }, [isOpen, lenis]);
 
   const canContinue = () => {
     if (step === 1) return !!form.position;
@@ -77,12 +95,28 @@ export function DriverApplicationModal() {
     return true;
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    setTimeout(() => {
-      closeModal();
-      setSubmitted(false);
-    }, 3000);
+  const handleSubmit = async () => {
+    setSubmitError(null);
+    try {
+      const { submitDriverApplication } = await import("@/lib/api");
+      await submitDriverApplication({
+        position: form.position,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        phone: form.phone,
+        address: form.address,
+        cdlType: form.cdlType,
+        experience: form.experience,
+      });
+      setSubmitted(true);
+      setTimeout(() => {
+        closeModal();
+        setSubmitted(false);
+      }, 3000);
+    } catch {
+      setSubmitError("Failed to submit. Please try again.");
+    }
   };
 
   return (
@@ -96,8 +130,10 @@ export function DriverApplicationModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm dark:bg-black/75"
             onClick={closeModal}
+            onWheel={(e) => e.preventDefault()}
+            onTouchMove={(e) => e.preventDefault()}
           />
 
           {/* Modal */}
@@ -107,11 +143,12 @@ export function DriverApplicationModal() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 20 }}
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
+            className="pointer-events-none fixed inset-0 z-[101] flex items-end justify-center p-0 sm:items-center sm:p-4"
           >
             <div
-              className="w-full max-w-[540px] bg-white rounded-3xl shadow-2xl pointer-events-auto overflow-hidden"
+              className="pointer-events-auto flex h-[100dvh] w-full max-w-[540px] flex-col overflow-hidden rounded-none border border-border bg-card text-card-foreground shadow-2xl transition-colors duration-300 sm:h-auto sm:max-h-[min(90vh,720px)] sm:rounded-3xl dark:shadow-[0_24px_80px_rgba(0,0,0,0.5)]"
               onClick={(e) => e.stopPropagation()}
+              onWheel={(e) => e.stopPropagation()}
             >
               {submitted ? (
                 <motion.div
@@ -119,71 +156,80 @@ export function DriverApplicationModal() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="flex flex-col items-center justify-center py-20 px-8 text-center"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#C1121F]/10 flex items-center justify-center mb-6">
-                    <Check size={40} className="text-[#C1121F]" />
+                  <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+                    <Check size={40} className="text-primary" />
                   </div>
-                  <h2 className="text-2xl font-bold text-[#07152F] mb-3">Application Submitted!</h2>
-                  <p className="text-gray-500">Our recruitment team will contact you within 24–48 hours.</p>
+                  <h2 className="mb-3 text-2xl font-bold text-foreground">Application Submitted!</h2>
+                  <p className="text-muted-foreground">Our recruitment team will contact you within 24–48 hours.</p>
                 </motion.div>
               ) : (
                 <>
-                  {/* Header */}
-                  <div className="px-7 pt-7 pb-5">
-                    {/* Brand badge */}
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#C1121F]/30 bg-[#C1121F]/8">
-                        <Truck size={13} className="text-[#C1121F]" />
-                        <span className="text-xs font-bold tracking-widest text-[#C1121F]">AMTRUCK</span>
-                      </div>
-                      <button
-                        data-testid="button-close-modal"
-                        onClick={closeModal}
-                        className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-colors"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
+                  {/* Logo */}
+                  <div className="relative shrink-0 px-4 pb-4 pt-5 sm:px-7 sm:pt-7">
+                    <button
+                      data-testid="button-close-modal"
+                      onClick={closeModal}
+                      className="absolute right-4 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground dark:border-white/15 sm:right-7 sm:top-7"
+                      aria-label="Close application form"
+                    >
+                      <X size={16} />
+                    </button>
 
-                    <h2 className="text-2xl font-bold text-[#07152F] mb-1">Driver Application</h2>
-                    <p className="text-sm text-gray-400">
+                    <div className="flex justify-center px-10 sm:px-12">
+                      <div className="rounded-xl border border-border bg-background px-5 py-3 shadow-sm ring-1 ring-border/60 dark:border-white/15 dark:bg-muted/90 dark:ring-white/10">
+                        <Logo className="h-10 w-auto min-w-[132px] sm:h-12 sm:min-w-[148px]" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <ModalDivider />
+
+                  {/* Title + stepper */}
+                  <div className="shrink-0 px-4 py-4 sm:px-7 sm:py-5">
+                    <h2 className="mb-1 text-center text-xl font-bold text-foreground sm:text-left sm:text-2xl">Driver Application</h2>
+                    <p className="text-center text-sm text-muted-foreground sm:text-left">
                       Step {step} of 4 —{" "}
-                      <span className="text-gray-600">{steps[step - 1].label.charAt(0) + steps[step - 1].label.slice(1).toLowerCase()}</span>
+                      <span className="text-foreground/80">{steps[step - 1].label.charAt(0) + steps[step - 1].label.slice(1).toLowerCase()}</span>
                     </p>
 
-                    {/* Progress Steps */}
-                    <div className="flex items-center mt-6 mb-2">
+                    <div className="mt-5 flex items-center sm:mt-6">
                       {steps.map((s, i) => {
                         const Icon = s.icon;
                         const done = step > s.id;
                         const active = step === s.id;
                         return (
-                          <div key={s.id} className="flex items-center flex-1 last:flex-none">
+                          <div key={s.id} className="flex flex-1 items-center last:flex-none">
                             <div className="flex flex-col items-center gap-1.5">
                               <div
-                                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
-                                  done
-                                    ? "bg-[#C1121F] border-[#C1121F]"
-                                    : active
-                                    ? "bg-white border-[#C1121F]"
-                                    : "bg-white border-gray-200"
-                                }`}
+                                className={cn(
+                                  "flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-10 sm:w-10",
+                                  done && "border-primary bg-primary",
+                                  active && !done && "border-primary bg-card dark:border-primary",
+                                  !active && !done && "border-border bg-card dark:border-white/20",
+                                )}
                               >
                                 {done ? (
-                                  <Check size={16} className="text-white" strokeWidth={3} />
+                                  <Check size={16} className="text-primary-foreground" strokeWidth={3} />
                                 ) : (
-                                  <Icon size={16} className={active ? "text-[#C1121F]" : "text-gray-300"} />
+                                  <Icon size={16} className={active ? "text-primary" : "text-muted-foreground/50 dark:text-white/35"} />
                                 )}
                               </div>
                               <span
-                                className={`text-[10px] font-bold tracking-wider ${
-                                  active ? "text-[#C1121F]" : done ? "text-[#C1121F]" : "text-gray-300"
-                                }`}
+                                className={cn(
+                                  "hidden text-[10px] font-bold tracking-wider min-[400px]:block",
+                                  active || done ? "text-primary" : "text-muted-foreground/50",
+                                )}
                               >
                                 {s.label}
                               </span>
                             </div>
                             {i < steps.length - 1 && (
-                              <div className={`flex-1 h-[2px] mx-2 mb-5 rounded transition-all duration-300 ${done ? "bg-[#C1121F]" : "bg-gray-200"}`} />
+                              <div
+                                className={cn(
+                                  "mx-2 mb-5 h-[2px] flex-1 rounded transition-all duration-300",
+                                  done ? "bg-primary" : "bg-border dark:bg-white/12",
+                                )}
+                              />
                             )}
                           </div>
                         );
@@ -191,11 +237,10 @@ export function DriverApplicationModal() {
                     </div>
                   </div>
 
-                  {/* Divider */}
-                  <div className="h-px bg-gray-100 mx-7" />
+                  <ModalDivider />
 
                   {/* Body */}
-                  <div className="px-7 py-5 max-h-[420px] overflow-y-auto">
+                  <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-7">
                     <AnimatePresence mode="wait">
                       {step === 1 && (
                         <motion.div
@@ -205,46 +250,51 @@ export function DriverApplicationModal() {
                           exit={{ opacity: 0, x: -20 }}
                           transition={{ duration: 0.25 }}
                         >
-                          <p className="text-sm text-gray-500 mb-5">
+                          <p className="mb-5 text-sm text-muted-foreground">
                             Choose the position that best matches your situation. We welcome all experience levels.
                           </p>
                           <div className="space-y-3">
-                            {positions.map((pos) => (
+                            {positions.map((pos) => {
+                              const PosIcon = pos.icon;
+                              return (
                               <button
                                 key={pos.title}
                                 data-testid={`button-position-${pos.title.toLowerCase().replace(/\s+/g, "-")}`}
                                 onClick={() => setForm((f) => ({ ...f, position: pos.title }))}
-                                className={`w-full text-left p-4 rounded-2xl border-2 transition-all duration-200 ${
+                                className={cn(
+                                  "w-full rounded-2xl border-2 p-4 text-left transition-all duration-200",
                                   form.position === pos.title
-                                    ? "border-[#C1121F] bg-[#C1121F]/5"
-                                    : "border-gray-200 hover:border-gray-300"
-                                }`}
+                                    ? "border-primary bg-primary/10 dark:bg-primary/15"
+                                    : "border-border hover:border-primary/30 dark:border-white/15 dark:hover:border-primary/40",
+                                )}
                               >
                                 <div className="flex items-start justify-between">
                                   <div className="flex items-start gap-3">
-                                    <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 mt-0.5">
-                                      <Truck size={16} className="text-gray-500" />
+                                    <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted">
+                                      <PosIcon size={16} className="text-muted-foreground" />
                                     </div>
                                     <div>
-                                      <p className="font-bold text-[#07152F] text-sm">{pos.title}</p>
-                                      <p className="text-xs text-gray-400 mt-0.5">{pos.desc}</p>
-                                      <div className="flex flex-wrap gap-1.5 mt-2.5">
+                                      <p className="text-sm font-bold text-foreground">{pos.title}</p>
+                                      <p className="mt-0.5 text-xs text-muted-foreground">{pos.desc}</p>
+                                      <div className="mt-2.5 flex flex-wrap gap-1.5">
                                         {pos.tags.map((tag) => (
-                                          <span key={tag} className="px-2.5 py-0.5 rounded-full border border-gray-200 text-[10px] font-semibold text-gray-500">
+                                          <span key={tag} className="rounded-full border border-border px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
                                             {tag}
                                           </span>
                                         ))}
                                       </div>
                                     </div>
                                   </div>
-                                  <div className={`w-5 h-5 rounded-full border-2 shrink-0 mt-1 flex items-center justify-center transition-all ${
-                                    form.position === pos.title ? "border-[#C1121F] bg-[#C1121F]" : "border-gray-300"
-                                  }`}>
-                                    {form.position === pos.title && <div className="w-2 h-2 rounded-full bg-white" />}
+                                  <div className={cn(
+                                    "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+                                    form.position === pos.title ? "border-primary bg-primary" : "border-border",
+                                  )}>
+                                    {form.position === pos.title && <div className="h-2 w-2 rounded-full bg-primary-foreground" />}
                                   </div>
                                 </div>
                               </button>
-                            ))}
+                            );
+                            })}
                           </div>
                         </motion.div>
                       )}
@@ -258,7 +308,7 @@ export function DriverApplicationModal() {
                           transition={{ duration: 0.25 }}
                           className="space-y-4"
                         >
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <FormField label="FIRST NAME" icon={<User size={14} />} placeholder="John" value={form.firstName} onChange={(v) => setForm((f) => ({ ...f, firstName: v }))} testId="input-first-name" />
                             <FormField label="LAST NAME" icon={<User size={14} />} placeholder="Doe" value={form.lastName} onChange={(v) => setForm((f) => ({ ...f, lastName: v }))} testId="input-last-name" />
                           </div>
@@ -278,12 +328,12 @@ export function DriverApplicationModal() {
                           className="space-y-5"
                         >
                           <div>
-                            <label className="text-[10px] font-bold tracking-widest text-gray-500 block mb-2">CHOOSE YOUR CDL TYPE</label>
+                            <label className="mb-2 block text-[10px] font-bold tracking-widest text-muted-foreground">CHOOSE YOUR CDL TYPE</label>
                             <select
                               data-testid="select-cdl-type"
                               value={form.cdlType}
                               onChange={(e) => setForm((f) => ({ ...f, cdlType: e.target.value }))}
-                              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm text-[#07152F] focus:outline-none focus:border-[#C1121F] transition-colors appearance-none bg-white"
+                              className="w-full appearance-none rounded-xl border-2 border-border bg-background px-4 py-3 text-sm text-foreground transition-colors focus:border-primary focus:outline-none"
                             >
                               <option value="">Select CDL Type...</option>
                               <option value="A">Class A — Full Tractor-Trailer</option>
@@ -293,7 +343,7 @@ export function DriverApplicationModal() {
                           </div>
 
                           <div>
-                            <label className="text-[10px] font-bold tracking-widest text-gray-500 block mb-2">YEARS OF COMMERCIAL DRIVING EXPERIENCE?</label>
+                            <label className="mb-2 block text-[10px] font-bold tracking-widest text-muted-foreground">YEARS OF COMMERCIAL DRIVING EXPERIENCE?</label>
                             <input
                               data-testid="input-experience-years"
                               type="number"
@@ -302,18 +352,18 @@ export function DriverApplicationModal() {
                               placeholder="e.g. 3"
                               value={form.experience}
                               onChange={(e) => setForm((f) => ({ ...f, experience: e.target.value }))}
-                              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm text-[#07152F] focus:outline-none focus:border-[#C1121F] transition-colors"
+                              className="w-full rounded-xl border-2 border-border bg-background px-4 py-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
                             />
                           </div>
 
                           <div>
-                            <label className="text-[10px] font-bold tracking-widest text-gray-500 block mb-2">DRIVER LICENSE (BOTH SIDES)</label>
-                            <div className="grid grid-cols-2 gap-3">
+                            <label className="mb-2 block text-[10px] font-bold tracking-widest text-muted-foreground">DRIVER LICENSE (BOTH SIDES)</label>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                               {["Front side", "Back side"].map((side) => (
-                                <label key={side} data-testid={`upload-license-${side.toLowerCase().replace(" ", "-")}`} className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#C1121F]/50 hover:bg-[#C1121F]/5 transition-all">
-                                  <Upload size={18} className="text-gray-400" />
-                                  <span className="text-xs font-semibold text-gray-500">{side}</span>
-                                  <span className="text-[10px] text-gray-400">PDF, JPG, PNG</span>
+                                <label key={side} data-testid={`upload-license-${side.toLowerCase().replace(" ", "-")}`} className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border p-4 transition-all hover:border-primary/50 hover:bg-primary/5">
+                                  <Upload size={18} className="text-muted-foreground" />
+                                  <span className="text-xs font-semibold text-muted-foreground">{side}</span>
+                                  <span className="text-[10px] text-muted-foreground/70">PDF, JPG, PNG</span>
                                   <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" />
                                 </label>
                               ))}
@@ -321,24 +371,24 @@ export function DriverApplicationModal() {
                           </div>
 
                           <div>
-                            <label className="text-[10px] font-bold tracking-widest text-gray-500 block mb-2">MEDICAL CARD</label>
-                            <label data-testid="upload-medical-card" className="flex items-center gap-3 p-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#C1121F]/50 hover:bg-[#C1121F]/5 transition-all">
-                              <Upload size={18} className="text-gray-400 shrink-0" />
+                            <label className="mb-2 block text-[10px] font-bold tracking-widest text-muted-foreground">MEDICAL CARD</label>
+                            <label data-testid="upload-medical-card" className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-border p-4 transition-all hover:border-primary/50 hover:bg-primary/5">
+                              <Upload size={18} className="shrink-0 text-muted-foreground" />
                               <div>
-                                <p className="text-xs font-semibold text-gray-600">Choose file</p>
-                                <p className="text-[10px] text-gray-400">PDF, JPG, PNG up to 10MB</p>
+                                <p className="text-xs font-semibold text-foreground">Choose file</p>
+                                <p className="text-[10px] text-muted-foreground">PDF, JPG, PNG up to 10MB</p>
                               </div>
                               <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" />
                             </label>
                           </div>
 
                           <div>
-                            <label className="text-[10px] font-bold tracking-widest text-gray-500 block mb-2">RESUME / DOCUMENT <span className="font-normal normal-case text-gray-400">(optional)</span></label>
-                            <label data-testid="upload-resume" className="flex items-center gap-3 p-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#C1121F]/50 hover:bg-[#C1121F]/5 transition-all">
-                              <FileText size={18} className="text-gray-400 shrink-0" />
+                            <label className="mb-2 block text-[10px] font-bold tracking-widest text-muted-foreground">RESUME / DOCUMENT <span className="font-normal normal-case text-muted-foreground/70">(optional)</span></label>
+                            <label data-testid="upload-resume" className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-border p-4 transition-all hover:border-primary/50 hover:bg-primary/5">
+                              <FileText size={18} className="shrink-0 text-muted-foreground" />
                               <div>
-                                <p className="text-xs font-semibold text-gray-600">Attach resume (optional)</p>
-                                <p className="text-[10px] text-gray-400">PDF, DOCX up to 10MB</p>
+                                <p className="text-xs font-semibold text-foreground">Attach resume (optional)</p>
+                                <p className="text-[10px] text-muted-foreground">PDF, DOCX up to 10MB</p>
                               </div>
                               <input type="file" className="hidden" accept=".pdf,.doc,.docx" />
                             </label>
@@ -354,7 +404,7 @@ export function DriverApplicationModal() {
                           exit={{ opacity: 0, x: -20 }}
                           transition={{ duration: 0.25 }}
                         >
-                          <p className="text-sm text-gray-500 mb-5">Review your application before submitting. Everything looks good?</p>
+                          <p className="mb-5 text-sm text-muted-foreground">Review your application before submitting. Everything looks good?</p>
 
                           <div className="space-y-3">
                             {[
@@ -366,28 +416,30 @@ export function DriverApplicationModal() {
                               { label: "CDL Type", value: form.cdlType ? `Class ${form.cdlType}` : "—" },
                               { label: "Experience", value: form.experience ? `${form.experience} years` : "—" },
                             ].map(({ label, value }) => (
-                              <div key={label} className="flex justify-between items-start py-3 border-b border-gray-100 last:border-0">
-                                <span className="text-[11px] font-bold tracking-widest text-gray-400 uppercase">{label}</span>
-                                <span className="text-sm font-semibold text-[#07152F] text-right max-w-[60%]">{value || "—"}</span>
+                              <div key={label} className="flex items-start justify-between border-b border-border py-3 last:border-0">
+                                <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
+                                <span className="max-w-[60%] text-right text-sm font-semibold text-foreground">{value || "—"}</span>
                               </div>
                             ))}
                           </div>
 
-                          <p className="text-xs text-gray-400 mt-5 leading-relaxed">
-                            By submitting, you agree to AMTRUCK's Driver Privacy Policy and consent to being contacted by our recruitment team.
+                          <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
+                            By submitting, you agree to NYBC Trucking&apos;s Driver Privacy Policy and consent to being contacted by our recruitment team.
                           </p>
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
 
+                  <ModalDivider />
+
                   {/* Footer */}
-                  <div className="px-7 py-5 border-t border-gray-100 flex items-center justify-between">
+                  <div className="flex shrink-0 items-center justify-between px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-7 sm:py-5">
                     {step > 1 ? (
                       <button
                         data-testid="button-back"
                         onClick={() => setStep((s) => s - 1)}
-                        className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors"
+                        className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
                       >
                         <ChevronLeft size={16} />
                         Back
@@ -396,27 +448,32 @@ export function DriverApplicationModal() {
                       <div />
                     )}
 
-                    <span className="text-sm font-semibold text-gray-400">{step} / 4</span>
+                    <span className="text-sm font-semibold text-muted-foreground">{step} / 4</span>
 
                     {step < 4 ? (
                       <button
                         data-testid="button-continue"
                         onClick={() => setStep((s) => s + 1)}
                         disabled={!canContinue()}
-                        className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#C1121F] text-white text-sm font-bold tracking-wide hover:bg-[#a00e1a] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_4px_20px_rgba(193,18,31,0.35)]"
+                        className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-bold tracking-wide text-primary-foreground shadow-[0_4px_20px_hsl(var(--primary)/0.35)] transition-all hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         Continue
                         <ChevronRight size={16} />
                       </button>
                     ) : (
+                      <>
+                      {submitError && (
+                        <p className="text-sm text-destructive font-semibold mb-2">{submitError}</p>
+                      )}
                       <button
                         data-testid="button-submit-application"
                         onClick={handleSubmit}
-                        className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#C1121F] text-white text-sm font-bold tracking-wide hover:bg-[#a00e1a] transition-all shadow-[0_4px_20px_rgba(193,18,31,0.35)]"
+                        className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-bold tracking-wide text-primary-foreground shadow-[0_4px_20px_hsl(var(--primary)/0.35)] transition-all hover:bg-primary/90"
                       >
                         Submit
                         <Check size={16} />
                       </button>
+                      </>
                     )}
                   </div>
                 </>
@@ -448,16 +505,16 @@ function FormField({
 }) {
   return (
     <div>
-      <label className="text-[10px] font-bold tracking-widest text-gray-500 block mb-1.5">{label}</label>
+      <label className="mb-1.5 block text-[10px] font-bold tracking-widest text-muted-foreground">{label}</label>
       <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{icon}</span>
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">{icon}</span>
         <input
           data-testid={testId}
           type={type}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full border-2 border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm text-[#07152F] placeholder-gray-300 focus:outline-none focus:border-[#C1121F] transition-colors"
+          className="w-full rounded-xl border-2 border-border bg-background py-3 pl-9 pr-4 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
         />
       </div>
     </div>

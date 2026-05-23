@@ -43,6 +43,12 @@ export const ROUTES: { from: CityId; to: CityId; delay: number }[] = [
   { from: "denver", to: "chicago", delay: 1 },
 ];
 
+export const HERO_STATS = [
+  { value: "48", suffix: "", label: "States covered" },
+  { value: "99.8", suffix: "%", label: "On-time delivery" },
+  { value: "24/7", suffix: "", label: "Live dispatch" },
+] as const;
+
 export const GLASS_CARDS_TOP = [
   { title: "99.8% On-Time", sub: "Industry-leading reliability" },
   { title: "24/7 Dispatch", sub: "Live fleet coordination" },
@@ -59,6 +65,25 @@ export const COVERAGE_STATS = [
   { title: "Live Lanes", sub: "Animated route monitoring" },
 ] as const;
 
+export type RotatingHub = {
+  id: string;
+  label: string;
+  color: "red" | "green";
+  /** Hub visits these cities in a loop */
+  sequence: CityId[];
+};
+
+/** Each dot blinks off, then reappears at the next hub city in the loop */
+export const ROTATING_HUBS: RotatingHub[] = CITIES.map((city, i) => ({
+  id: `hub-${city.id}`,
+  label: city.label,
+  color: city.color,
+  sequence: [
+    ...CITIES.slice(i).map((c) => c.id),
+    ...CITIES.slice(0, i).map((c) => c.id),
+  ],
+}));
+
 export function cityById(id: CityId) {
   return CITIES.find((c) => c.id === id)!;
 }
@@ -67,4 +92,11 @@ export function routePath(from: CityNode, to: CityNode) {
   const mx = (from.x + to.x) / 2;
   const my = Math.min(from.y, to.y) - 40;
   return `M ${from.x} ${from.y} Q ${mx} ${my} ${to.x} ${to.y}`;
+}
+
+export function coordsForSequence(sequence: CityId[]) {
+  return sequence.map((id) => {
+    const c = cityById(id);
+    return { x: c.x, y: c.y };
+  });
 }

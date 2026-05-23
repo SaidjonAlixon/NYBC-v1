@@ -1,4 +1,4 @@
-import { memo, useMemo, useState, useId } from "react";
+import { memo, useEffect, useMemo, useState, useId } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import usaMap from "@svg-maps/usa";
 import { useTheme } from "@/hooks/useTheme";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import {
   CITIES,
   ROUTES,
+  ROTATING_HUBS,
   GLASS_CARDS_TOP,
   GLASS_CARD_BOTTOM,
   COVERAGE_STATS,
@@ -16,6 +17,7 @@ import {
   MAP_VIEWBOX,
   MAP_VIEWBOX_COVERAGE,
   type CityId,
+  type RotatingHub,
 } from "./hero-map-data";
 
 const CONTINENTAL_IDS = new Set([
@@ -26,21 +28,27 @@ const CONTINENTAL_IDS = new Set([
 ]);
 
 type HeroUsaMapProps = {
-  variant?: "hero" | "coverage";
+  variant?: "hero" | "hero-panel" | "hero-immersive" | "coverage";
 };
 
 function CityTooltip({
   city,
   isDark,
+  x: px,
+  y: py,
 }: {
   city: (typeof CITIES)[0];
   isDark: boolean;
+  x?: number;
+  y?: number;
 }) {
   const label = city.label.toUpperCase();
   const w = label.length * 6.2 + 20;
   const h = 24;
-  const x = city.x - w / 2;
-  const y = city.y - 44;
+  const cx = px ?? city.x;
+  const cy = py ?? city.y;
+  const x = cx - w / 2;
+  const y = cy - 44;
 
   return (
     <motion.g
@@ -64,7 +72,7 @@ function CityTooltip({
         strokeWidth={1}
       />
       <text
-        x={city.x}
+        x={cx}
         y={y + 16}
         textAnchor="middle"
         className={cn(
@@ -120,11 +128,119 @@ function GlassStatCard({
   );
 }
 
+function hubFill(color: "red" | "green", isDark: boolean) {
+  return color === "red"
+    ? isDark
+      ? "hsl(var(--primary))"
+      : "hsl(355 72% 46%)"
+    : isDark
+      ? "hsl(152 65% 42%)"
+      : "hsl(152 45% 38%)";
+}
+
+function BlinkingHubMarker({
+  hub,
+  index,
+  isDark,
+  uid,
+  isHovered,
+  onHover,
+}: {
+  hub: RotatingHub;
+  index: number;
+  isDark: boolean;
+  uid: string;
+  isHovered: boolean;
+  onHover: (active: boolean, cityId: CityId) => void;
+}) {
+  const [cityIndex, setCityIndex] = useState(index % hub.sequence.length);
+  const [lit, setLit] = useState(index % 3 !== 1);
+
+  const city = cityById(hub.sequence[cityIndex]);
+  const fill = hubFill(hub.color, isDark);
+  const filter =
+    hub.color === "red" ? `url(#${uid}-glow-red)` : `url(#${uid}-glow-green)`;
+  const visible = lit || isHovered;
+  const onMs = 2000 + index * 260;
+  const offMs = 950 + index * 110;
+
+  useEffect(() => {
+    if (isHovered) return;
+
+    if (lit) {
+      const timer = window.setTimeout(() => setLit(false), onMs);
+      return () => window.clearTimeout(timer);
+    }
+
+    const timer = window.setTimeout(() => {
+      setCityIndex((i) => (i + 1) % hub.sequence.length);
+      setLit(true);
+    }, offMs);
+
+    return () => window.clearTimeout(timer);
+  }, [lit, isHovered, onMs, offMs, hub.sequence.length]);
+
+  return (
+    <g
+      filter={visible ? filter : undefined}
+      className="cursor-pointer"
+      onMouseEnter={() => onHover(true, hub.sequence[cityIndex])}
+      onMouseLeave={() => onHover(false, hub.sequence[cityIndex])}
+      onFocus={() => onHover(true, hub.sequence[cityIndex])}
+      onBlur={() => onHover(false, hub.sequence[cityIndex])}
+      role="button"
+      tabIndex={0}
+      aria-label={city.label}
+    >
+      <circle cx={city.x} cy={city.y} r={22} fill="transparent" />
+      <title>{city.label}</title>
+      <motion.g
+        animate={{
+          opacity: visible ? 1 : 0,
+          scale: visible ? 1 : 0.55,
+        }}
+        transition={{ duration: 0.38, ease: "easeOut" }}
+        style={{ transformOrigin: `${city.x}px ${city.y}px` }}
+      >
+        <motion.circle
+          cx={city.x}
+          cy={city.y}
+          r={20}
+          fill={fill}
+          animate={
+            visible && !isHovered
+              ? { opacity: [0.35, 0.6, 0.35], scale: [1, 1.18, 1] }
+              : { opacity: isHovered ? 0.65 : 0.5, scale: isHovered ? 1.15 : 1 }
+          }
+          transition={
+            visible && !isHovered
+              ? { duration: 1.8, repeat: Infinity, ease: "easeInOut" }
+              : { duration: 0.2 }
+          }
+        />
+        <motion.circle
+          cx={city.x}
+          cy={city.y}
+          r={6.5}
+          fill={fill}
+          stroke={isDark ? "hsl(0 0% 100% / 0.35)" : "hsl(0 0% 100% / 0.9)"}
+          strokeWidth={1.25}
+        />
+        <circle cx={city.x} cy={city.y} r={3} className="fill-white" />
+      </motion.g>
+    </g>
+  );
+}
+
 function UsaMapSvg({
   isDark,
   uid,
   hoveredCity,
   setHoveredCity,
+  hoveredHubId,
+  setHoveredHubId,
+  hoveredHubCity,
+  setHoveredHubCity,
   viewBox = MAP_VIEWBOX,
   emphasis = "hero",
 }: {
@@ -132,10 +248,16 @@ function UsaMapSvg({
   uid: string;
   hoveredCity: CityId | null;
   setHoveredCity: (id: CityId | null) => void;
+  hoveredHubId?: string | null;
+  setHoveredHubId?: (id: string | null) => void;
+  hoveredHubCity?: CityId | null;
+  setHoveredHubCity?: (id: CityId | null) => void;
   viewBox?: string;
-  emphasis?: "hero" | "coverage";
+  emphasis?: "hero" | "coverage" | "immersive";
 }) {
+  const isImmersive = emphasis === "immersive";
   const isCoverage = emphasis === "coverage";
+  const isMapBold = isCoverage || isImmersive;
   const states = useMemo(
     () =>
       (usaMap.locations as MapLocation[]).filter((loc) =>
@@ -150,18 +272,20 @@ function UsaMapSvg({
       className="h-full w-full max-h-full max-w-full"
       aria-label="NYBC Trucking USA network map"
       role="img"
-      preserveAspectRatio={isCoverage ? "xMidYMid slice" : "xMidYMid meet"}
+      preserveAspectRatio={
+        emphasis === "coverage" || emphasis === "immersive" ? "xMidYMid slice" : "xMidYMid meet"
+      }
     >
       <defs>
         <filter id={`${uid}-glow-red`} x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation={isCoverage ? 5 : 4} result="blur" />
+          <feGaussianBlur stdDeviation={isImmersive ? 5 : isCoverage ? 5 : 4} result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
         <filter id={`${uid}-glow-green`} x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feGaussianBlur stdDeviation={isImmersive ? 4 : 3} result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -171,12 +295,12 @@ function UsaMapSvg({
           <stop
             offset="0%"
             stopColor={isDark ? "hsl(var(--primary))" : "hsl(355 75% 48%)"}
-            stopOpacity={isDark ? 0.9 : 0.55}
+            stopOpacity={isDark ? 0.95 : isImmersive ? 0.72 : 0.55}
           />
           <stop
             offset="100%"
             stopColor={isDark ? "hsl(215 90% 60%)" : "hsl(215 40% 55%)"}
-            stopOpacity={isDark ? 0.5 : 0.35}
+            stopOpacity={isDark ? 0.55 : isImmersive ? 0.5 : 0.35}
           />
         </linearGradient>
       </defs>
@@ -185,12 +309,16 @@ function UsaMapSvg({
         className={cn(
           "transition-[fill,stroke] duration-500",
           isDark
-            ? isCoverage
-              ? "[&_path]:fill-[hsl(222_47%_11%/0.72)]"
-              : "[&_path]:fill-[hsl(222_47%_9%/0.55)]"
-            : isCoverage
-              ? "[&_path]:fill-[hsl(210_20%_94%/0.95)]"
-              : "[&_path]:fill-[hsl(210_25%_96%/0.85)]",
+            ? isImmersive
+              ? "[&_path]:fill-[hsl(222_47%_16%/0.58)]"
+              : isCoverage
+                ? "[&_path]:fill-[hsl(222_47%_11%/0.72)]"
+                : "[&_path]:fill-[hsl(222_47%_9%/0.55)]"
+            : isImmersive
+              ? "[&_path]:fill-[hsl(210_18%_86%/0.82)]"
+              : isCoverage
+                ? "[&_path]:fill-[hsl(210_20%_94%/0.95)]"
+                : "[&_path]:fill-[hsl(210_25%_96%/0.85)]",
         )}
       >
         {states.map((state) => (
@@ -200,14 +328,18 @@ function UsaMapSvg({
             className={cn(
               "transition-[stroke] duration-500",
               isDark
-                ? isCoverage
-                  ? "stroke-white/25 hover:stroke-white/40"
-                  : "stroke-white/[0.14] hover:stroke-white/25"
-                : isCoverage
-                  ? "stroke-slate-400/95 hover:stroke-slate-500"
-                  : "stroke-slate-300/90 hover:stroke-slate-400",
+                ? isImmersive
+                  ? "stroke-white/40 hover:stroke-white/55"
+                  : isCoverage
+                    ? "stroke-white/25 hover:stroke-white/40"
+                    : "stroke-white/[0.14] hover:stroke-white/25"
+                : isImmersive
+                  ? "stroke-slate-500/90 hover:stroke-slate-600"
+                  : isCoverage
+                    ? "stroke-slate-400/95 hover:stroke-slate-500"
+                    : "stroke-slate-300/90 hover:stroke-slate-400",
             )}
-            strokeWidth={isCoverage ? 1.35 : 1}
+            strokeWidth={isImmersive ? 1.5 : isCoverage ? 1.35 : 1}
             vectorEffect="non-scaling-stroke"
           />
         ))}
@@ -223,19 +355,25 @@ function UsaMapSvg({
             d={d}
             fill="none"
             stroke={`url(#${uid}-route-gradient)`}
-            strokeWidth={isCoverage ? (isDark ? 1.75 : 1.4) : isDark ? 1.25 : 1}
+            strokeWidth={
+              isImmersive ? (isDark ? 2.25 : 1.85) : isCoverage ? (isDark ? 1.75 : 1.4) : isDark ? 1.25 : 1
+            }
             strokeLinecap="round"
-            strokeDasharray={isCoverage ? "5 8" : "6 10"}
+            strokeDasharray={isMapBold ? "5 8" : "6 10"}
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{
               pathLength: [0.15, 1, 0.15],
               opacity: isDark
-                ? isCoverage
-                  ? [0.35, 0.85, 0.35]
-                  : [0.25, 0.65, 0.25]
-                : isCoverage
-                  ? [0.3, 0.65, 0.3]
-                  : [0.2, 0.5, 0.2],
+                ? isImmersive
+                  ? [0.45, 0.9, 0.45]
+                  : isCoverage
+                    ? [0.35, 0.85, 0.35]
+                    : [0.25, 0.65, 0.25]
+                : isImmersive
+                  ? [0.5, 0.88, 0.5]
+                  : isCoverage
+                    ? [0.3, 0.65, 0.3]
+                    : [0.2, 0.5, 0.2],
               strokeDashoffset: [0, -32],
             }}
             transition={{
@@ -257,13 +395,13 @@ function UsaMapSvg({
         );
       })}
 
-      {ROUTES.slice(0, 4).map((route, i) => {
+      {ROUTES.slice(0, isImmersive ? 6 : 4).map((route, i) => {
         const from = cityById(route.from);
         const to = cityById(route.to);
         return (
           <motion.circle
             key={`shipment-${route.from}-${route.to}`}
-            r={isCoverage ? (isDark ? 4.5 : 4) : isDark ? 3.5 : 3}
+            r={isImmersive ? (isDark ? 4 : 3.5) : isCoverage ? (isDark ? 4.5 : 4) : isDark ? 3.5 : 3}
             fill={isDark ? "hsl(var(--primary))" : "hsl(355 70% 45%)"}
             className={isDark ? "opacity-90" : "opacity-70"}
             animate={{
@@ -281,78 +419,96 @@ function UsaMapSvg({
         );
       })}
 
-      {CITIES.map((city, i) => {
-        const isRed = city.color === "red";
-        const isHovered = hoveredCity === city.id;
-        const fill = isRed
-          ? isDark
-            ? "hsl(var(--primary))"
-            : "hsl(355 72% 46%)"
-          : isDark
-            ? "hsl(152 65% 42%)"
-            : "hsl(152 45% 38%)";
-        const filter = isRed ? `url(#${uid}-glow-red)` : `url(#${uid}-glow-green)`;
+      {isImmersive
+        ? ROTATING_HUBS.map((hub, i) => (
+            <BlinkingHubMarker
+              key={hub.id}
+              hub={hub}
+              index={i}
+              isDark={isDark}
+              uid={uid}
+              isHovered={hoveredHubId === hub.id}
+              onHover={(active, cityId) => {
+                setHoveredHubId?.(active ? hub.id : null);
+                setHoveredHubCity?.(active ? cityId : null);
+              }}
+            />
+          ))
+        : CITIES.map((city, i) => {
+            const isRed = city.color === "red";
+            const isHovered = hoveredCity === city.id;
+            const fill = hubFill(city.color, isDark);
+            const filter = isRed ? `url(#${uid}-glow-red)` : `url(#${uid}-glow-green)`;
+            const pulseR = isCoverage ? 20 : 16;
+            const coreR = isCoverage ? 7.5 : 5.5;
+            const hitR = isCoverage ? 28 : 22;
 
-        return (
-          <g
-            key={city.id}
-            filter={filter}
-            className="cursor-pointer"
-            onMouseEnter={() => setHoveredCity(city.id)}
-            onMouseLeave={() => setHoveredCity(null)}
-            onFocus={() => setHoveredCity(city.id)}
-            onBlur={() => setHoveredCity(null)}
-            role="button"
-            tabIndex={0}
-            aria-label={city.label}
-          >
-              <circle cx={city.x} cy={city.y} r={isCoverage ? 26 : 22} fill="transparent" />
-              <title>{city.label}</title>
-              <motion.circle
-                cx={city.x}
-                cy={city.y}
-                r={isCoverage ? 18 : 16}
-              fill={fill}
-              initial={{ opacity: 0.12 }}
-              animate={{
-                opacity: isHovered ? 0.4 : [0.12, 0.28, 0.12],
-                scale: isHovered ? 1.4 : [1, 1.35, 1],
-              }}
-              transition={{
-                duration: isHovered ? 0.2 : 3.2,
-                repeat: isHovered ? 0 : Infinity,
-                ease: "easeInOut",
-                delay: isHovered ? 0 : i * 0.25,
-              }}
-              style={{ transformOrigin: `${city.x}px ${city.y}px` }}
-            />
-              <motion.circle
-                cx={city.x}
-                cy={city.y}
-                r={isCoverage ? 6.5 : 5.5}
-                fill={fill}
-              animate={{ scale: isHovered ? 1.25 : [1, 1.15, 1] }}
-              transition={{
-                duration: isHovered ? 0.2 : 2.4,
-                repeat: isHovered ? 0 : Infinity,
-                ease: "easeInOut",
-                delay: isHovered ? 0 : i * 0.2,
-              }}
-              style={{ transformOrigin: `${city.x}px ${city.y}px` }}
-            />
-              <circle cx={city.x} cy={city.y} r={isCoverage ? 3 : 2.5} className="fill-white" />
-          </g>
-        );
-      })}
+            return (
+              <g
+                key={city.id}
+                filter={filter}
+                className="cursor-pointer"
+                onMouseEnter={() => setHoveredCity(city.id)}
+                onMouseLeave={() => setHoveredCity(null)}
+                onFocus={() => setHoveredCity(city.id)}
+                onBlur={() => setHoveredCity(null)}
+                role="button"
+                tabIndex={0}
+                aria-label={city.label}
+              >
+                <circle cx={city.x} cy={city.y} r={hitR} fill="transparent" />
+                <title>{city.label}</title>
+                <motion.circle
+                  cx={city.x}
+                  cy={city.y}
+                  r={pulseR}
+                  fill={fill}
+                  initial={{ opacity: 0.18 }}
+                  animate={{
+                    opacity: isHovered ? 0.5 : [0.18, 0.35, 0.18],
+                    scale: isHovered ? 1.4 : [1, 1.35, 1],
+                  }}
+                  transition={{
+                    duration: isHovered ? 0.2 : 3.2,
+                    repeat: isHovered ? 0 : Infinity,
+                    ease: "easeInOut",
+                    delay: isHovered ? 0 : i * 0.25,
+                  }}
+                  style={{ transformOrigin: `${city.x}px ${city.y}px` }}
+                />
+                <motion.circle
+                  cx={city.x}
+                  cy={city.y}
+                  r={coreR}
+                  fill={fill}
+                  animate={{ scale: isHovered ? 1.25 : [1, 1.15, 1] }}
+                  transition={{
+                    duration: isHovered ? 0.2 : 2.4,
+                    repeat: isHovered ? 0 : Infinity,
+                    ease: "easeInOut",
+                    delay: isHovered ? 0 : i * 0.2,
+                  }}
+                  style={{ transformOrigin: `${city.x}px ${city.y}px` }}
+                />
+                <circle cx={city.x} cy={city.y} r={isCoverage ? 3.5 : 2.5} className="fill-white" />
+              </g>
+            );
+          })}
 
       <AnimatePresence>
-        {hoveredCity && (
+        {isImmersive && hoveredHubCity ? (
+          <CityTooltip
+            key={hoveredHubCity}
+            city={cityById(hoveredHubCity)}
+            isDark={isDark}
+          />
+        ) : hoveredCity ? (
           <CityTooltip
             key={hoveredCity}
             city={cityById(hoveredCity)}
             isDark={isDark}
           />
-        )}
+        ) : null}
       </AnimatePresence>
     </svg>
   );
@@ -362,8 +518,63 @@ function HeroUsaMapInner({ variant = "hero" }: HeroUsaMapProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [hoveredCity, setHoveredCity] = useState<CityId | null>(null);
+  const [hoveredHubId, setHoveredHubId] = useState<string | null>(null);
+  const [hoveredHubCity, setHoveredHubCity] = useState<CityId | null>(null);
   const uid = useId().replace(/:/g, "");
   const isCoverage = variant === "coverage";
+  const isHeroPanel = variant === "hero-panel";
+  const isHeroImmersive = variant === "hero-immersive";
+
+  if (isHeroImmersive) {
+    return (
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className={cn(
+            "pointer-events-auto absolute left-1/2 top-[46%] h-[min(88vh,860px)] w-[min(145vw,1500px)] max-w-none -translate-x-1/2 -translate-y-1/2",
+            "sm:h-[min(92vh,920px)] sm:w-[min(150vw,1600px)]",
+          )}
+        >
+          <UsaMapSvg
+            isDark={isDark}
+            uid={uid}
+            hoveredCity={hoveredCity}
+            setHoveredCity={setHoveredCity}
+            hoveredHubId={hoveredHubId}
+            setHoveredHubId={setHoveredHubId}
+            hoveredHubCity={hoveredHubCity}
+            setHoveredHubCity={setHoveredHubCity}
+            emphasis="immersive"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (isHeroPanel) {
+    return (
+      <div className="relative h-full min-h-[280px] w-full sm:min-h-[340px] lg:min-h-[400px]">
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-0 rounded-[inherit] transition-colors duration-500",
+            isDark
+              ? "bg-[radial-gradient(ellipse_at_55%_45%,hsl(var(--primary)/0.2)_0%,transparent_58%)]"
+              : "bg-[radial-gradient(ellipse_at_55%_45%,hsl(var(--primary)/0.1)_0%,transparent_60%)]",
+          )}
+        />
+        <div className="relative z-10 flex h-full items-center justify-center p-2 sm:p-4">
+          <div className="h-full w-full max-h-[420px] scale-[1.04] lg:scale-[1.08]">
+            <UsaMapSvg
+              isDark={isDark}
+              uid={uid}
+              hoveredCity={hoveredCity}
+              setHoveredCity={setHoveredCity}
+              emphasis="coverage"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isCoverage) {
     return (

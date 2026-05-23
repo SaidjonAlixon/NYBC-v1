@@ -1,6 +1,5 @@
 import {
   HeroSection,
-  MarqueeSection,
   ServicesSection,
   StatsSection,
   HowWeWorkSection,
@@ -17,7 +16,6 @@ export default function Home() {
   return (
     <main className="w-full flex flex-col bg-background min-h-screen">
       <HeroSection />
-      <MarqueeSection />
       <ServicesSection />
       <StatsSection />
       <HowWeWorkSection />

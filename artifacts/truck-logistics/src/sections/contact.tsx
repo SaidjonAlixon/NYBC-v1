@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Phone, Mail, MapPin, Navigation2, Clock, ArrowRight } from "lucide-react";
+import { Phone, Mail, MapPin, Navigation2, Clock } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 
@@ -17,12 +17,15 @@ export const ContactHero = () => (
   </section>
 );
 
+const CONTACT_PHONE = "+18166088636";
+const CONTACT_PHONE_DISPLAY = "+1 (816) 608-8636";
+
 export const ContactOptions = () => {
   const options = [
-    { d: "Sales & Quotes", e: "sales@amtruck.com", p: "1-800-555-0100" },
-    { d: "Dispatch Center", e: "dispatch@amtruck.com", p: "1-800-555-0199" },
-    { d: "Driver Recruitment", e: "drivers@amtruck.com", p: "1-800-555-0200" },
-    { d: "Customer Support", e: "support@amtruck.com", p: "1-800-555-0300" },
+    { d: "Sales & Quotes", e: "sales@amtruck.com", p: CONTACT_PHONE_DISPLAY },
+    { d: "Dispatch Center", e: "dispatch@amtruck.com", p: CONTACT_PHONE_DISPLAY },
+    { d: "Driver Recruitment", e: "drivers@amtruck.com", p: CONTACT_PHONE_DISPLAY },
+    { d: "Customer Support", e: "support@amtruck.com", p: CONTACT_PHONE_DISPLAY },
   ];
   return (
     <section className="py-24 bg-card/20">
@@ -33,7 +36,9 @@ export const ContactOptions = () => {
             <div key={i} className="p-8 border border-white/5 bg-background rounded-2xl hover:border-primary/50 transition-colors">
               <h3 className="font-bold text-lg mb-4 text-foreground">{o.d}</h3>
               <p className="text-muted-foreground text-sm mb-2">{o.e}</p>
-              <p className="text-primary font-bold">{o.p}</p>
+              <a href={`tel:${CONTACT_PHONE}`} className="text-primary font-bold transition-colors hover:text-primary/80">
+                {o.p}
+              </a>
             </div>
           ))}
         </div>
@@ -45,21 +50,16 @@ export const ContactOptions = () => {
 export const OfficeLocations = () => (
   <section className="py-24 bg-background">
     <div className="container mx-auto px-6">
-      <h2 className="text-4xl font-bold tracking-tighter text-center mb-16 text-foreground">OUR LOCATIONS</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {[
-          { c: "Dallas, TX (HQ)", a: "1234 Logistics Blvd, Dallas TX 75201" },
-          { c: "Los Angeles, CA", a: "5678 Freight Ave, Los Angeles CA 90001" },
-          { c: "Chicago, IL", a: "9012 Transport St, Chicago IL 60601" }
-        ].map((l, i) => (
-          <div key={i} className="p-8 border border-white/5 bg-card/30 rounded-2xl flex items-start gap-4">
-            <MapPin className="text-primary shrink-0" />
-            <div>
-              <h3 className="font-bold text-xl mb-2 text-foreground">{l.c}</h3>
-              <p className="text-muted-foreground">{l.a}</p>
-            </div>
+      <h2 className="text-4xl font-bold tracking-tighter text-center mb-16 text-foreground">OUR LOCATION</h2>
+      <div className="mx-auto max-w-xl">
+        <div className="flex items-start justify-center gap-4 rounded-2xl border border-white/5 bg-card/30 p-8">
+          <MapPin className="shrink-0 text-primary" />
+          <div className="text-center sm:text-left">
+            <h3 className="mb-2 text-xl font-bold text-foreground">Kansas City, MO</h3>
+            <p className="text-muted-foreground">1800 GENESSEE ST SUITE 230</p>
+            <p className="text-muted-foreground">KANSAS CITY, MO 64102</p>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   </section>
@@ -163,40 +163,6 @@ export const BusinessHours = () => (
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-xs font-bold tracking-widest relative z-10">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> DISPATCH ONLINE
         </div>
-      </div>
-    </div>
-  </section>
-);
-
-export const ResponseTimeline = () => (
-  <section className="py-24 bg-background">
-    <div className="container mx-auto px-6 text-center">
-      <h2 className="text-4xl font-bold tracking-tighter mb-16 text-foreground">HOW WE HANDLE YOUR INQUIRY</h2>
-      <div className="flex flex-col md:flex-row justify-center items-center gap-8">
-        {['Submit Inquiry', 'Team Review (2hrs)', 'Full Response & Pricing (4hrs)'].map((step, i) => (
-          <div key={i} className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-card border border-primary text-primary flex items-center justify-center font-bold text-xl">
-              {i+1}
-            </div>
-            <span className="font-bold text-foreground">{step}</span>
-            {i !== 2 && <ArrowRight className="hidden md:block text-muted-foreground ml-4" />}
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-export const ContactFaq = () => (
-  <section className="py-24 bg-card/10">
-    <div className="container mx-auto px-6 max-w-3xl">
-      <h2 className="text-4xl font-bold tracking-tighter text-center mb-16 text-foreground">FREQUENTLY ASKED QUESTIONS</h2>
-      <div className="space-y-4">
-        {['How quickly can you arrange a pickup?', 'Do you provide real-time tracking?', 'What is your service area?'].map((q, i) => (
-          <div key={i} className="p-6 bg-background border border-white/5 rounded-xl cursor-pointer hover:border-primary/50 transition-colors">
-            <h3 className="font-bold text-foreground text-lg">{q}</h3>
-          </div>
-        ))}
       </div>
     </div>
   </section>

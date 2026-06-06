@@ -11,7 +11,6 @@ import {
   ROTATING_HUBS,
   GLASS_CARDS_TOP,
   GLASS_CARD_BOTTOM,
-  COVERAGE_STATS,
   cityById,
   routePath,
   MAP_VIEWBOX,
@@ -594,7 +593,7 @@ function HeroUsaMapInner({ variant = "hero" }: HeroUsaMapProps) {
           )}
         />
 
-        <div className="absolute inset-x-0 top-0 bottom-[76px] z-10 flex items-center justify-center overflow-hidden px-1 sm:bottom-[84px] sm:px-2 md:bottom-[88px]">
+        <div className="absolute inset-x-0 top-0 bottom-0 z-10 flex items-center justify-center overflow-hidden px-1 sm:px-2">
           <UsaMapSvg
             isDark={isDark}
             uid={uid}
@@ -603,26 +602,6 @@ function HeroUsaMapInner({ variant = "hero" }: HeroUsaMapProps) {
             viewBox={MAP_VIEWBOX_COVERAGE}
             emphasis="coverage"
           />
-        </div>
-
-        <div className="absolute inset-x-0 bottom-0 z-10 flex flex-wrap items-stretch justify-center gap-2 border-t border-border bg-background/80 px-3 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-background/70 sm:gap-3 sm:px-5 sm:py-4 md:px-6">
-          {COVERAGE_STATS.map((card, i) => (
-            <motion.div
-              key={card.title}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.15 + i * 0.1, duration: 0.45 }}
-              className="min-w-[140px] flex-1"
-            >
-              <GlassStatCard
-                title={card.title}
-                sub={card.sub}
-                isDark={isDark}
-                className="h-full text-center md:text-left"
-              />
-            </motion.div>
-          ))}
         </div>
 
         <div className="pointer-events-none absolute right-3 top-3 z-20 hidden flex-col gap-1.5 rounded-lg border border-border/80 bg-background/70 px-2.5 py-2 text-[9px] font-bold uppercase tracking-widest backdrop-blur-sm dark:border-white/10 dark:bg-background/60 sm:flex md:right-4 md:top-4 md:text-[10px]">

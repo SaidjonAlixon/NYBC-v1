@@ -2,11 +2,7 @@ import {
   HeroSection,
   ServicesSection,
   StatsSection,
-  HowWeWorkSection,
-  IndustriesSection,
   RouteMapSection,
-  FleetSection,
-  DashboardSection,
   TestimonialsSection,
   NewsSection,
   CtaSection
@@ -16,13 +12,10 @@ export default function Home() {
   return (
     <main className="w-full flex flex-col bg-background min-h-screen">
       <HeroSection />
+      <div className="h-8 bg-background md:h-12" aria-hidden />
       <ServicesSection />
       <StatsSection />
-      <HowWeWorkSection />
-      <IndustriesSection />
       <RouteMapSection />
-      <FleetSection />
-      <DashboardSection />
       <TestimonialsSection />
       <NewsSection />
       <CtaSection />

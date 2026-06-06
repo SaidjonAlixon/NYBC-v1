@@ -43,6 +43,34 @@ export const ROUTES: { from: CityId; to: CityId; delay: number }[] = [
   { from: "denver", to: "chicago", delay: 1 },
 ];
 
+export const HERO_SHOWCASE = [
+  {
+    title: "Fleet Operations",
+    sub: "Modern trucks · 48 states",
+    image:
+      "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=720&h=960&fit=crop&q=85",
+  },
+  {
+    title: "24/7 Dispatch",
+    sub: "Live route coordination",
+    image:
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=720&h=960&fit=crop&q=85",
+  },
+  {
+    title: "Nationwide Network",
+    sub: "Coast-to-coast lanes",
+    image:
+      "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=720&h=960&fit=crop&q=85",
+  },
+] as const;
+
+/** Stagger offsets for hero showcase cards */
+export const HERO_SHOWCASE_LAYOUT = [
+  { offset: "md:mt-8 md:-rotate-[2.5deg] md:translate-x-1", size: "h-[220px] sm:h-[250px] md:h-[290px]", z: "z-10" },
+  { offset: "md:mt-0 md:rotate-0 md:scale-[1.04]", size: "h-[240px] sm:h-[280px] md:h-[340px]", z: "z-10" },
+  { offset: "md:mt-8 md:rotate-[2.5deg] md:-translate-x-1", size: "h-[220px] sm:h-[250px] md:h-[290px]", z: "z-10" },
+] as const;
+
 export const HERO_STATS = [
   { value: "48", suffix: "", label: "States covered" },
   { value: "99.8", suffix: "%", label: "On-time delivery" },
@@ -58,12 +86,6 @@ export const GLASS_CARD_BOTTOM = {
   title: "Nationwide Coverage",
   sub: "48-state freight network",
 } as const;
-
-export const COVERAGE_STATS = [
-  { title: "48 States", sub: "Continental freight coverage" },
-  { title: "8 Major Hubs", sub: "NY · CHI · DAL · MIA · LA · ATL · SEA · DEN" },
-  { title: "Live Lanes", sub: "Animated route monitoring" },
-] as const;
 
 export type RotatingHub = {
   id: string;

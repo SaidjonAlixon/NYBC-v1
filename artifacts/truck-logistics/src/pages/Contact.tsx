@@ -5,8 +5,6 @@ import {
   ContactMap,
   ContactForm,
   BusinessHours,
-  ResponseTimeline,
-  ContactFaq,
   ContactCta
 } from "@/sections/contact";
 
@@ -19,8 +17,6 @@ export default function Contact() {
       <ContactMap />
       <ContactForm />
       <BusinessHours />
-      <ResponseTimeline />
-      <ContactFaq />
       <ContactCta />
     </main>
   );

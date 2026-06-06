@@ -27,90 +27,83 @@ export const AboutHero = () => (
 
 export const CompanyStory = () => (
   <section className="py-32 bg-card/30">
-    <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-      <motion.div 
+    <div className="container mx-auto px-6">
+      <motion.div
         initial={{ opacity: 0, x: -30 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
-        className="space-y-8"
+        className="mx-auto max-w-4xl space-y-8"
       >
-        <h2 className="text-4xl font-bold tracking-tighter">OUR STORY</h2>
-        <div className="w-20 h-1 bg-primary" />
-        <p className="text-muted-foreground text-lg leading-relaxed">
-          What started as a single truck operation in 2008 has evolved into one of the nation's premier logistics networks. We didn't just scale our fleet; we reimagined what freight transportation could be by integrating aerospace-grade tracking and predictive analytics.
-        </p>
-        <ul className="space-y-4">
+        <div>
+          <h2 className="text-4xl font-bold tracking-tighter">OUR STORY</h2>
+          <div className="mt-4 h-1 w-20 bg-primary" />
+        </div>
+
+        <div className="space-y-6 text-lg leading-relaxed text-muted-foreground">
+          <p>
+            What started as a small operation with a clear purpose has grown into a trusted local
+            and regional trucking partner built on reliability, hard work, and relationships.
+          </p>
+          <p>
+            Four years ago, we saw a gap in the transportation industry. Many businesses were
+            struggling with delayed deliveries, inconsistent communication, and carriers that
+            treated regional freight like an afterthought. We believed local and regional
+            transportation deserved the same level of professionalism and attention as long-haul
+            operations.
+          </p>
+          <p>
+            So we built a company focused on doing the fundamentals exceptionally well:
+          </p>
+        </div>
+
+        <ul className="space-y-3">
           {[
-            "2008 - Founded with 1 truck",
-            "2015 - Expanded to 48 contiguous states",
-            "2020 - Launched predictive logistics AI",
-            "2024 - Reached 1,200+ daily active routes"
+            "showing up on time,",
+            "communicating clearly,",
+            "protecting every load,",
+            "and building long-term partnerships with customers.",
           ].map((item, i) => (
-            <motion.li key={i} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: i*0.1 }} className="flex items-center gap-4 text-foreground font-medium">
-              <CheckCircle2 className="text-primary" size={20} />
+            <motion.li
+              key={item}
+              initial={{ opacity: 0, x: -10 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.08 }}
+              viewport={{ once: true }}
+              className="flex items-start gap-4 font-medium text-foreground"
+            >
+              <CheckCircle2 className="mt-0.5 shrink-0 text-primary" size={20} />
               {item}
             </motion.li>
           ))}
         </ul>
-      </motion.div>
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        className="grid grid-cols-2 gap-4"
-      >
-        {[
-          { v: "16", l: "Years in Business" },
-          { v: "48", l: "States" },
-          { v: "1,200+", l: "Routes" },
-          { v: "500+", l: "Drivers" }
-        ].map((s, i) => (
-          <div key={i} className="bg-background border border-white/10 p-8 rounded-2xl flex flex-col items-center text-center justify-center shadow-lg hover:border-primary/50 transition-all">
-            <span className="text-4xl font-bold text-primary mb-2">{s.v}</span>
-            <span className="text-sm font-bold tracking-widest text-muted-foreground uppercase">{s.l}</span>
-          </div>
-        ))}
-      </motion.div>
-    </div>
-  </section>
-);
 
-export const JourneyTimeline = () => (
-  <section className="py-32 bg-background border-y border-white/5">
-    <div className="container mx-auto px-6">
-      <h2 className="text-4xl font-bold tracking-tighter text-center mb-16">OUR JOURNEY</h2>
-      <div className="flex overflow-x-auto gap-8 pb-8 snap-x">
-        {[
-          { y: "2008", t: "Founded", d: "Started with a single truck." },
-          { y: "2010", t: "First 10 trucks", d: "Expanded operations." },
-          { y: "2013", t: "Midwest expansion", d: "Opened regional hubs." },
-          { y: "2015", t: "National coverage", d: "48 states operational." },
-          { y: "2018", t: "Fleet modernization", d: "All new equipment." },
-          { y: "2020", t: "AI dispatch", d: "Tech integration." }
-        ].map((m, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i*0.1 }} className="min-w-[250px] snap-center p-6 border border-white/10 bg-card rounded-xl">
-            <h3 className="text-4xl font-bold text-primary mb-4">{m.y}</h3>
-            <h4 className="text-xl font-bold mb-2 text-foreground">{m.t}</h4>
-            <p className="text-muted-foreground">{m.d}</p>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-export const CeoMessage = () => (
-  <section className="py-32 bg-card/20 relative">
-    <div className="container mx-auto px-6 max-w-4xl text-center">
-      <span className="text-8xl text-primary font-serif leading-none absolute top-10 left-10 opacity-20">"</span>
-      <h2 className="text-3xl md:text-5xl font-medium tracking-tight leading-snug mb-12 text-foreground relative z-10 italic">
-        Our drivers don't just move freight. They move America forward. Every mile is a commitment.
-      </h2>
-      <div className="flex flex-col items-center">
-        <div className="w-16 h-16 rounded-full bg-primary/20 mb-4 border border-primary/50" />
-        <h4 className="font-bold text-lg text-foreground">Michael Vance</h4>
-        <span className="text-primary font-bold tracking-widest text-sm uppercase">CEO & Founder</span>
-      </div>
+        <div className="space-y-6 text-lg leading-relaxed text-muted-foreground">
+          <p>
+            From day one, our focus has been local and regional freight because we understand the
+            importance of fast, dependable service within the communities and businesses we serve.
+            Whether it&apos;s same-day deliveries, scheduled routes, dedicated lanes, or
+            time-sensitive shipments, our team works with urgency and accountability.
+          </p>
+          <p>
+            One of the things that sets our company apart is the lifestyle we provide for our
+            drivers and owner-operators. Unlike traditional over-the-road trucking, our local and
+            regional routes allow drivers to stay closer to home and spend more time with their
+            families. Many owner-operators choose to work with us because they value the balance
+            of building a strong career while still being present for the moments that matter most
+            at home.
+          </p>
+          <p>
+            What makes us different is our commitment to service and people — both our customers and
+            our drivers. We know every shipment represents a customer promise, a production
+            schedule, or a business deadline.
+          </p>
+          <p className="text-foreground">
+            As we continue to grow, our mission remains the same: to provide safe, efficient, and
+            dependable local and regional trucking solutions while creating opportunities for
+            drivers and owner-operators to succeed without sacrificing time with their families.
+          </p>
+        </div>
+      </motion.div>
     </div>
   </section>
 );
@@ -159,81 +152,70 @@ export const CoreValues = () => (
   </section>
 );
 
-export const TechnologySection = () => (
-  <section className="py-32 bg-background">
-    <div className="container mx-auto px-6">
-      <h2 className="text-4xl font-bold tracking-tighter text-center mb-16 text-foreground">POWERED BY TECHNOLOGY</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {['GPS Fleet Tracking', 'AI Dispatch System', 'Digital Documentation'].map((tech, i) => (
-          <div key={i} className="bg-card p-8 border border-white/5 rounded-2xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-full h-1 bg-primary/20 group-hover:bg-primary transition-colors" />
-            <h3 className="text-xl font-bold mb-4">{tech}</h3>
-            <div className="h-32 bg-background border border-white/10 rounded-lg flex items-center justify-center">
-              <span className="text-xs text-muted-foreground font-bold tracking-widest">[ SYSTEM UI ]</span>
-            </div>
-          </div>
-        ))}
+export const TechnologySection = () => {
+  const technologies = [
+    {
+      title: "GPS Fleet Tracking",
+      image:
+        "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&h=400&fit=crop&q=80",
+      alt: "Highway network and live fleet route tracking",
+    },
+    {
+      title: "AI Dispatch System",
+      image:
+        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop&q=80",
+      alt: "Dispatch dashboard with freight analytics",
+    },
+    {
+      title: "Digital Documentation",
+      image:
+        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&h=400&fit=crop&q=80",
+      alt: "Digital paperwork and compliance documentation",
+    },
+  ];
+
+  return (
+    <section className="py-32 bg-background">
+      <div className="container mx-auto px-6">
+        <h2 className="text-4xl font-bold tracking-tighter text-center mb-16 text-foreground">POWERED BY TECHNOLOGY</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {technologies.map((tech, i) => (
+            <motion.div
+              key={tech.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="group relative overflow-hidden rounded-2xl border border-white/5 bg-card p-8"
+            >
+              <div className="absolute top-0 left-0 h-1 w-full bg-primary/20 transition-colors group-hover:bg-primary" />
+              <h3 className="mb-4 text-xl font-bold text-foreground">{tech.title}</h3>
+              <div className="relative h-40 overflow-hidden rounded-lg border border-white/10 bg-background">
+                <img
+                  src={tech.image}
+                  alt={tech.alt}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export const SafetySection = () => (
   <section className="py-24 bg-card/20">
     <div className="container mx-auto px-6 text-center">
       <h2 className="text-4xl font-bold tracking-tighter mb-16 text-foreground">SAFETY IS OUR STANDARD</h2>
       <div className="flex flex-wrap justify-center gap-8">
-        {['DOT Certified', 'FMCSA Compliant', 'ISO 9001', 'SmartWay Certified'].map((c, i) => (
+        {['DOT Certified', 'FMCSA Compliant', 'ISO 9001', 'SmartWay Certified', '24/7 Fleet Assistance'].map((c, i) => (
           <div key={i} className="px-8 py-4 border border-white/10 bg-background rounded-full font-bold tracking-widest text-primary shadow-[0_0_15px_rgba(0,0,0,0.2)]">
             {c}
           </div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-export const CompanyStats = () => (
-  <section className="py-32 bg-primary text-primary-foreground">
-    <div className="container mx-auto px-6 grid grid-cols-2 md:grid-cols-3 gap-12 text-center">
-      {[
-        { v: "500+", l: "Trucks in Fleet" },
-        { v: "48", l: "States Covered" },
-        { v: "16", l: "Years Operating" },
-        { v: "1.2M+", l: "Miles Monthly" },
-        { v: "98.7%", l: "Safety Record" },
-        { v: "4.9★", l: "Client Rating" }
-      ].map((s, i) => (
-        <div key={i}>
-          <div className="text-5xl md:text-6xl font-bold mb-2">{s.v}</div>
-          <div className="text-sm font-bold tracking-widest opacity-80 uppercase">{s.l}</div>
-        </div>
-      ))}
-    </div>
-  </section>
-);
-
-export const LeadershipSection = () => (
-  <section className="py-24 bg-background">
-    <div className="container mx-auto px-6">
-      <h2 className="text-4xl font-bold tracking-tighter text-center mb-16 text-foreground">LEADERSHIP</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {[
-          { name: "Michael Vance", role: "CEO" },
-          { name: "Sarah Chen", role: "VP Operations" },
-          { name: "David Miller", role: "Head of Fleet" },
-          { name: "Elena Rodriguez", role: "CTO" }
-        ].map((member, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="flex flex-col gap-4 group cursor-pointer">
-            <div className="aspect-[3/4] bg-card rounded-xl border border-white/5 flex items-center justify-center relative overflow-hidden group-hover:border-primary/50 transition-all">
-              <span className="text-4xl font-bold text-muted-foreground group-hover:text-primary transition-colors">{member.name[0]}</span>
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-            </div>
-            <div>
-              <h4 className="font-bold text-lg text-foreground tracking-tight">{member.name}</h4>
-              <p className="text-primary text-sm font-bold tracking-widest uppercase">{member.role}</p>
-            </div>
-          </motion.div>
         ))}
       </div>
     </div>

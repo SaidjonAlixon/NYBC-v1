@@ -1,18 +1,42 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
-import { Truck, ShieldCheck, Globe, Clock, Package, BarChart3, Star, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Truck, Globe, Map, Clock, Package, BarChart3, Star, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { HeroUsaMap } from "@/components/hero/HeroUsaMap";
 export { HeroSection } from "@/components/hero/HeroSection";
 
 export const ServicesSection = () => {
   const services = [
-    { icon: <Truck size={32} />, title: "Freight Transportation", desc: "Reliable full truckload shipping across North America with real-time tracking." },
-    { icon: <Globe size={32} />, title: "Long Haul Delivery", desc: "Cross-country routes optimized for speed and maximum efficiency." },
-    { icon: <Clock size={32} />, title: "Refrigerated Logistics", desc: "Temperature-controlled freight ensuring product integrity from origin to destination." },
-    { icon: <Package size={32} />, title: "Heavy Cargo", desc: "Specialized equipment for oversized and overweight shipments." },
-    { icon: <BarChart3 size={32} />, title: "Fleet Solutions", desc: "Dedicated capacity tailored to your specific supply chain needs." },
-    { icon: <ShieldCheck size={32} />, title: "Nationwide Shipping", desc: "Comprehensive network covering all 48 contiguous states." },
+    {
+      icon: <Truck size={32} />,
+      title: "Freight Transportation",
+      desc: "Dependable local and regional freight transportation with on-time deliveries, responsive communication, and real-time shipment visibility.",
+    },
+    {
+      icon: <Map size={32} />,
+      title: "Regional Delivery",
+      desc: "Regional delivery routes designed for efficiency, fast transit times, and consistent service across neighboring states.",
+    },
+    {
+      icon: <Clock size={32} />,
+      title: "Refrigerated Logistics",
+      desc: "Temperature-controlled transportation solutions that protect sensitive freight from pickup to final delivery.",
+    },
+    {
+      icon: <Package size={32} />,
+      title: "Heavy Cargo",
+      desc: "Specialized hauling solutions for heavy equipment, industrial materials, and oversized regional shipments.",
+    },
+    {
+      icon: <BarChart3 size={32} />,
+      title: "Fleet Solutions",
+      desc: "Flexible fleet solutions tailored to support recurring routes, dedicated deliveries, and growing transportation demands.",
+    },
+    {
+      icon: <Globe size={32} />,
+      title: "Nationwide Shipping",
+      desc: "Expanded shipping coverage through trusted logistics partnerships, connecting local freight to destinations across the country.",
+    },
   ];
   return (
     <section className="py-32 relative z-10 bg-background">
@@ -407,16 +431,37 @@ export const TestimonialsSection = () => {
 
 export const NewsSection = () => {
   const articles = [
-    { tag: "Technology", title: "The Future of American Freight: AI-Powered Dispatch" },
-    { tag: "Safety", title: "2024 Safety Compliance Guide for OTR Drivers" },
-    { tag: "Market Trends", title: "Why Cold Chain Logistics is America's Fastest Growing Sector" }
+    {
+      tag: "Technology",
+      title: "The Future of American Freight: AI-Powered Dispatch",
+      image:
+        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop&q=80",
+      alt: "Dispatch dashboard and freight technology",
+    },
+    {
+      tag: "Safety",
+      title: "2024 Safety Compliance Guide for OTR Drivers",
+      image:
+        "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=800&h=500&fit=crop&q=80",
+      alt: "Semi truck on the highway",
+    },
+    {
+      tag: "Market Trends",
+      title: "Why Cold Chain Logistics is America's Fastest Growing Sector",
+      image:
+        "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=500&fit=crop&q=80",
+      alt: "Warehouse logistics and cold chain operations",
+    },
   ];
   return (
     <section className="py-32 bg-background">
       <div className="container px-6 mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">INDUSTRY INSIGHTS</h2>
-          <div className="w-20 h-1 bg-primary mx-auto" />
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">WEEKLY NEWS</h2>
+          <div className="w-20 h-1 bg-primary mx-auto mb-4" />
+          <p className="mx-auto max-w-2xl text-muted-foreground">
+            Fresh updates from the road — fleet news, safety tips, and market trends every week.
+          </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {articles.map((art, i) => (
@@ -428,8 +473,14 @@ export const NewsSection = () => {
               transition={{ delay: i * 0.1 }}
               className="group cursor-pointer border border-white/5 bg-card/20 rounded-xl overflow-hidden hover:border-primary/50 transition-all"
             >
-              <div className="h-48 bg-muted relative overflow-hidden group-hover:bg-primary/20 transition-colors">
-                 <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+              <div className="relative h-48 overflow-hidden bg-muted">
+                <img
+                  src={art.image}
+                  alt={art.alt}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
               </div>
               <div className="p-6">
                 <span className="text-xs font-bold tracking-widest text-primary mb-2 block">{art.tag}</span>
@@ -444,24 +495,31 @@ export const NewsSection = () => {
   );
 };
 
+const CTA_TRUCK_IMAGE =
+  "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1600&h=900&fit=crop&q=80";
+
 export const CtaSection = () => (
-  <section className="py-40 relative flex items-center justify-center overflow-hidden bg-background">
-    <div className="absolute inset-0 bg-primary/5" />
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[1px] bg-primary/20 shadow-[0_0_50px_rgba(193,18,31,1)]" />
-    
-    <div className="container relative z-10 px-6 text-center flex flex-col items-center">
-      <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-8 leading-tight max-w-3xl text-foreground">
+  <section className="relative flex items-center justify-center overflow-hidden bg-background py-40">
+    <img
+      src={CTA_TRUCK_IMAGE}
+      alt=""
+      aria-hidden
+      className="absolute inset-0 h-full w-full object-cover"
+    />
+    <div className="absolute inset-0 bg-gradient-to-b from-background/92 via-background/72 to-background/92 dark:from-[hsl(223_55%_9%)]/94 dark:via-[hsl(223_55%_9%)]/78 dark:to-[hsl(223_55%_9%)]/94" />
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background)/0.45)_100%)]" />
+
+    <div className="container relative z-10 flex flex-col items-center px-6 text-center">
+      <h2 className="mb-8 max-w-3xl text-4xl font-bold leading-tight tracking-tighter text-foreground md:text-6xl">
         READY TO MOVE YOUR BUSINESS FORWARD?
       </h2>
-      <div className="flex gap-4">
-        <Link href="/contact" className="inline-flex items-center gap-4 px-10 py-5 bg-primary text-primary-foreground font-bold tracking-widest text-lg hover:bg-primary/90 transition-all hover:scale-105 shadow-[0_0_30px_rgba(193,18,31,0.4)] group">
-          GET A FREE QUOTE
-          <ArrowRight className="group-hover:translate-x-2 transition-transform" />
-        </Link>
-        <Link href="/contact" className="inline-flex items-center gap-4 px-10 py-5 border border-white/10 bg-card text-foreground font-bold tracking-widest text-lg hover:border-primary/50 transition-all hover:scale-105 group">
-          CALL DISPATCH
-        </Link>
-      </div>
+      <Link
+        href="/contact"
+        className="group inline-flex items-center gap-4 bg-primary px-10 py-5 text-lg font-bold tracking-widest text-primary-foreground shadow-[0_0_30px_rgba(193,18,31,0.4)] transition-all hover:scale-105 hover:bg-primary/90"
+      >
+        CONTACT US
+        <ArrowRight className="transition-transform group-hover:translate-x-2" />
+      </Link>
     </div>
   </section>
 );

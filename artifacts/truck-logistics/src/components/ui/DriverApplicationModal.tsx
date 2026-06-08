@@ -1,6 +1,23 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Truck, User, Clock, FileText, Check, ChevronLeft, ChevronRight, Upload, Phone, Mail, MapPin, TrendingUp, type LucideIcon } from "lucide-react";
+import {
+  X,
+  Truck,
+  User,
+  Clock,
+  FileText,
+  Check,
+  ChevronRight,
+  Upload,
+  Phone,
+  Mail,
+  MapPin,
+  TrendingUp,
+  ArrowRight,
+  Shield,
+  type LucideIcon,
+} from "lucide-react";
 import { useApplicationModal } from "@/contexts/ApplicationModalContext";
 import { useLenisControl } from "@/contexts/LenisContext";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
@@ -8,35 +25,39 @@ import { Logo } from "@/components/layout/Logo";
 import { cn } from "@/lib/utils";
 
 const steps = [
-  { id: 1, label: "POSITION", icon: Truck },
-  { id: 2, label: "CONTACT", icon: User },
-  { id: 3, label: "EXPERIENCE", icon: Clock },
-  { id: 4, label: "REVIEW", icon: FileText },
-];
+  { id: 1, label: "Role", headline: "Choose your path", icon: Truck },
+  { id: 2, label: "Contact", headline: "How we reach you", icon: User },
+  { id: 3, label: "Credentials", headline: "License & experience", icon: Clock },
+  { id: 4, label: "Review", headline: "Confirm & send", icon: FileText },
+] as const;
 
-/** Full-width section rule — visible in dark mode like light-theme reference */
-function ModalDivider() {
-  return <div role="separator" aria-hidden className="h-px w-full shrink-0 bg-border dark:bg-white/[0.14]" />;
-}
-
-const positions: { title: string; desc: string; tags: string[]; icon: LucideIcon }[] = [
+const positions: {
+  title: string;
+  desc: string;
+  tags: string[];
+  icon: LucideIcon;
+  accent: string;
+}[] = [
   {
     title: "Company Driver",
-    desc: "Drive our trucks and get paid per mile with full benefits",
-    tags: ["Weekly Pay", "Modern Fleet", "Home Time"],
+    desc: "Drive our fleet — weekly pay, modern equipment, home time.",
+    tags: ["Weekly Pay", "2019+ Fleet", "Regional Routes"],
     icon: Truck,
+    accent: "from-primary/20 to-primary/5",
   },
   {
     title: "Owner Operator",
-    desc: "Bring your own truck and enjoy maximum earnings",
-    tags: ["High % Pay", "Fuel Cards", "Dispatch Support", "Flexibility"],
+    desc: "Run your own truck with our dispatch and fuel support.",
+    tags: ["High % Pay", "Fuel Cards", "24/7 Dispatch"],
     icon: Truck,
+    accent: "from-slate-500/15 to-slate-500/5",
   },
   {
     title: "Investor",
-    desc: "Partner with us and invest in fleet growth with transparent returns",
-    tags: ["Fleet Growth", "Partnership", "Transparent Returns"],
+    desc: "Partner on fleet growth with transparent returns.",
+    tags: ["Partnership", "Fleet Growth", "Long-term"],
     icon: TrendingUp,
+    accent: "from-amber-500/15 to-amber-500/5",
   },
 ];
 
@@ -49,9 +70,74 @@ interface FormData {
   address: string;
   cdlType: string;
   experience: string;
-  licenseFile: string;
-  medicalCard: string;
+  licenseFront: File | null;
+  licenseBack: File | null;
+  medicalCard: File | null;
+  truckInspection: File | null;
+  truckEngine: File | null;
+  truckUnderEngine: File | null;
+  truckTires: File | null;
+  registrationCard: File | null;
+  resume: File | null;
 }
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+type Step2Field = "firstName" | "lastName" | "email" | "phone" | "address";
+
+function isValidEmail(email: string): boolean {
+  return EMAIL_RE.test(email.trim());
+}
+
+function isValidUsPhone(phone: string): boolean {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 10) return true;
+  return digits.length === 11 && digits.startsWith("1");
+}
+
+function formatUsPhone(input: string): string {
+  let digits = input.replace(/\D/g, "");
+  if (digits.startsWith("1") && digits.length > 10) {
+    digits = digits.slice(1);
+  }
+  digits = digits.slice(0, 10);
+  if (!digits.length) return "";
+  if (digits.length <= 3) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+function getStep2Errors(form: FormData): Partial<Record<Step2Field, string>> {
+  const errors: Partial<Record<Step2Field, string>> = {};
+  if (!form.firstName.trim()) errors.firstName = "First name is required";
+  if (!form.lastName.trim()) errors.lastName = "Last name is required";
+  if (!form.email.trim()) errors.email = "Email is required";
+  else if (!isValidEmail(form.email)) errors.email = "Enter a valid email address";
+  if (!form.phone.trim()) errors.phone = "Phone is required";
+  else if (!isValidUsPhone(form.phone)) errors.phone = "Enter a valid US phone number";
+  if (!form.address.trim()) errors.address = "Home address is required";
+  return errors;
+}
+
+const emptyForm: FormData = {
+  position: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  address: "",
+  cdlType: "",
+  experience: "",
+  licenseFront: null,
+  licenseBack: null,
+  medicalCard: null,
+  truckInspection: null,
+  truckEngine: null,
+  truckUnderEngine: null,
+  truckTires: null,
+  registrationCard: null,
+  resume: null,
+};
 
 export function DriverApplicationModal() {
   const { isOpen, closeModal } = useApplicationModal();
@@ -60,18 +146,16 @@ export function DriverApplicationModal() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [form, setForm] = useState<FormData>({
-    position: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    address: "",
-    cdlType: "",
-    experience: "",
-    licenseFile: "",
-    medicalCard: "",
-  });
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState<FormData>(emptyForm);
+  const [step2Touched, setStep2Touched] = useState<Partial<Record<Step2Field, boolean>>>({});
+  const [step2Attempted, setStep2Attempted] = useState(false);
+
+  const currentStep = steps[step - 1];
+  const progress = Math.round((step / steps.length) * 100);
+  const isOwnerOperator = form.position === "Owner Operator";
+  const isCompanyDriver = form.position === "Company Driver";
+  const isInvestor = form.position === "Investor";
 
   useEffect(() => {
     if (isOpen) {
@@ -79,402 +163,612 @@ export function DriverApplicationModal() {
       setStep(1);
       setSubmitted(false);
       setSubmitError(null);
-      setForm({ position: "", firstName: "", lastName: "", email: "", phone: "", address: "", cdlType: "", experience: "", licenseFile: "", medicalCard: "" });
+      setForm(emptyForm);
+      setStep2Touched({});
+      setStep2Attempted(false);
     } else {
       lenis?.start();
     }
-    return () => {
-      lenis?.start();
-    };
+    return () => lenis?.start();
   }, [isOpen, lenis]);
+
+  const step2Errors = getStep2Errors(form);
+  const isStep2Valid = Object.keys(step2Errors).length === 0;
+
+  const showStep2Error = (field: Step2Field) => {
+    const message = step2Errors[field];
+    if (!message) return false;
+    if (step2Attempted || step2Touched[field]) return true;
+    if (field === "email" && form.email.trim()) return true;
+    if (field === "phone" && form.phone.trim()) return true;
+    return false;
+  };
+
+  const markStep2Touched = (field: Step2Field) => {
+    setStep2Touched((prev) => ({ ...prev, [field]: true }));
+  };
+
+  const handleContinue = () => {
+    if (step === 2 && !isStep2Valid) {
+      setStep2Attempted(true);
+      return;
+    }
+    setStep((s) => s + 1);
+  };
 
   const canContinue = () => {
     if (step === 1) return !!form.position;
-    if (step === 2) return !!(form.firstName && form.lastName && form.email && form.phone);
-    if (step === 3) return !!(form.cdlType && form.experience);
+    if (step === 2) return isStep2Valid;
+    if (step === 3) {
+      if (isOwnerOperator || isInvestor) return true;
+      return !!(form.cdlType && form.experience);
+    }
     return true;
   };
 
   const handleSubmit = async () => {
     setSubmitError(null);
+    setSubmitting(true);
     try {
-      const { submitDriverApplication } = await import("@/lib/api");
+      const { uploadToBlob, submitDriverApplication } = await import("@/lib/api");
+
+      const docFields: { file: File | null; label: string }[] = [];
+      if (form.licenseFront) docFields.push({ file: form.licenseFront, label: "Driver License (Front)" });
+      if (form.licenseBack) docFields.push({ file: form.licenseBack, label: "Driver License (Back)" });
+      if (form.medicalCard) docFields.push({ file: form.medicalCard, label: "Medical Card" });
+      if (form.truckInspection) docFields.push({ file: form.truckInspection, label: "Annual Truck Inspection" });
+      if (form.truckEngine) docFields.push({ file: form.truckEngine, label: "Truck Photo — Engine" });
+      if (form.truckUnderEngine) docFields.push({ file: form.truckUnderEngine, label: "Truck Photo — Under Engine" });
+      if (form.truckTires) docFields.push({ file: form.truckTires, label: "Truck Photo — Tires" });
+      if (form.registrationCard) docFields.push({ file: form.registrationCard, label: "Registration Card (Cap Card)" });
+      if (form.resume) docFields.push({ file: form.resume, label: "Resume" });
+
+      const documents = await Promise.all(
+        docFields.map(async ({ file, label }) => ({
+          label,
+          url: await uploadToBlob(file!),
+        })),
+      );
+
       await submitDriverApplication({
         position: form.position,
-        firstName: form.firstName,
-        lastName: form.lastName,
+        name: `${form.firstName} ${form.lastName}`.trim(),
         email: form.email,
         phone: form.phone,
         address: form.address,
         cdlType: form.cdlType,
         experience: form.experience,
+        documents,
       });
       setSubmitted(true);
       setTimeout(() => {
         closeModal();
         setSubmitted(false);
       }, 3000);
-    } catch {
-      setSubmitError("Failed to submit. Please try again.");
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Failed to submit. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm dark:bg-black/75"
+            transition={{ duration: 0.35 }}
+            className="fixed inset-0 z-[200] bg-[hsl(223_55%_6%)]/80 backdrop-blur-md"
             onClick={closeModal}
             onWheel={(e) => e.preventDefault()}
             onTouchMove={(e) => e.preventDefault()}
           />
 
-          {/* Modal */}
           <motion.div
             key="modal"
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 20 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="pointer-events-none fixed inset-0 z-[101] flex items-end justify-center p-0 sm:items-center sm:p-4"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="pointer-events-none fixed inset-0 z-[201] flex items-end justify-center p-0 sm:items-center sm:p-4 md:p-6"
           >
             <div
-              className="pointer-events-auto flex h-[100dvh] w-full max-w-[540px] flex-col overflow-hidden rounded-none border border-border bg-card text-card-foreground shadow-2xl transition-colors duration-300 sm:h-auto sm:max-h-[min(90vh,720px)] sm:rounded-3xl dark:shadow-[0_24px_80px_rgba(0,0,0,0.5)]"
+              className="pointer-events-auto flex h-[100dvh] w-full max-w-[920px] flex-col overflow-hidden bg-background shadow-[0_32px_80px_rgba(0,0,0,0.45)] sm:h-auto sm:max-h-[min(92vh,680px)] sm:flex-row sm:rounded-2xl sm:border sm:border-border/80"
               onClick={(e) => e.stopPropagation()}
               onWheel={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="driver-app-title"
             >
               {submitted ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="flex flex-col items-center justify-center py-20 px-8 text-center"
-                >
-                  <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-                    <Check size={40} className="text-primary" />
-                  </div>
-                  <h2 className="mb-3 text-2xl font-bold text-foreground">Application Submitted!</h2>
-                  <p className="text-muted-foreground">Our recruitment team will contact you within 24–48 hours.</p>
-                </motion.div>
+                <SuccessPanel />
               ) : (
                 <>
-                  {/* Logo */}
-                  <div className="relative shrink-0 px-4 pb-4 pt-5 sm:px-7 sm:pt-7">
-                    <button
-                      data-testid="button-close-modal"
-                      onClick={closeModal}
-                      className="absolute right-4 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground dark:border-white/15 sm:right-7 sm:top-7"
-                      aria-label="Close application form"
-                    >
-                      <X size={16} />
-                    </button>
+                  {/* —— Left rail —— */}
+                  <aside className="relative flex shrink-0 flex-col bg-primary text-primary-foreground sm:w-[240px] md:w-[260px]">
+                    <div
+                      className="pointer-events-none absolute inset-0 opacity-[0.12]"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)",
+                        backgroundSize: "24px 24px",
+                      }}
+                      aria-hidden
+                    />
 
-                    <div className="flex justify-center px-10 sm:px-12">
-                      <div className="rounded-xl border border-border bg-background px-5 py-3 shadow-sm ring-1 ring-border/60 dark:border-white/15 dark:bg-muted/90 dark:ring-white/10">
-                        <Logo className="h-10 w-auto min-w-[132px] sm:h-12 sm:min-w-[148px]" />
+                    <div className="relative flex items-center justify-between px-4 py-4 sm:flex-col sm:items-stretch sm:px-5 sm:py-6">
+                      <div className="rounded-lg bg-white px-2.5 py-1.5 shadow-sm sm:mx-auto">
+                        <Logo className="h-8 w-auto sm:h-9" />
                       </div>
+                      <button
+                        data-testid="button-close-modal"
+                        onClick={closeModal}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/25 bg-white/10 text-white transition-colors hover:bg-white/20 sm:absolute sm:right-4 sm:top-4"
+                        aria-label="Close application form"
+                      >
+                        <X size={16} />
+                      </button>
                     </div>
-                  </div>
 
-                  <ModalDivider />
+                    {/* Mobile step strip */}
+                    <div className="flex gap-1.5 overflow-x-auto px-4 pb-3 sm:hidden">
+                      {steps.map((s) => (
+                        <span
+                          key={s.id}
+                          className={cn(
+                            "shrink-0 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider",
+                            step === s.id ? "bg-white text-primary" : "bg-white/15 text-white/70",
+                          )}
+                        >
+                          {s.label}
+                        </span>
+                      ))}
+                    </div>
 
-                  {/* Title + stepper */}
-                  <div className="shrink-0 px-4 py-4 sm:px-7 sm:py-5">
-                    <h2 className="mb-1 text-center text-xl font-bold text-foreground sm:text-left sm:text-2xl">Driver Application</h2>
-                    <p className="text-center text-sm text-muted-foreground sm:text-left">
-                      Step {step} of 4 —{" "}
-                      <span className="text-foreground/80">{steps[step - 1].label.charAt(0) + steps[step - 1].label.slice(1).toLowerCase()}</span>
-                    </p>
-
-                    <div className="mt-5 flex items-center sm:mt-6">
-                      {steps.map((s, i) => {
+                    {/* Desktop vertical nav */}
+                    <nav className="relative hidden flex-1 flex-col gap-1 px-4 pb-6 sm:flex" aria-label="Application steps">
+                      {steps.map((s) => {
                         const Icon = s.icon;
                         const done = step > s.id;
                         const active = step === s.id;
                         return (
-                          <div key={s.id} className="flex flex-1 items-center last:flex-none">
-                            <div className="flex flex-col items-center gap-1.5">
-                              <div
-                                className={cn(
-                                  "flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-10 sm:w-10",
-                                  done && "border-primary bg-primary",
-                                  active && !done && "border-primary bg-card dark:border-primary",
-                                  !active && !done && "border-border bg-card dark:border-white/20",
-                                )}
-                              >
-                                {done ? (
-                                  <Check size={16} className="text-primary-foreground" strokeWidth={3} />
-                                ) : (
-                                  <Icon size={16} className={active ? "text-primary" : "text-muted-foreground/50 dark:text-white/35"} />
-                                )}
-                              </div>
-                              <span
-                                className={cn(
-                                  "hidden text-[10px] font-bold tracking-wider min-[400px]:block",
-                                  active || done ? "text-primary" : "text-muted-foreground/50",
-                                )}
-                              >
-                                {s.label}
-                              </span>
-                            </div>
-                            {i < steps.length - 1 && (
-                              <div
-                                className={cn(
-                                  "mx-2 mb-5 h-[2px] flex-1 rounded transition-all duration-300",
-                                  done ? "bg-primary" : "bg-border dark:bg-white/12",
-                                )}
-                              />
+                          <button
+                            key={s.id}
+                            type="button"
+                            disabled={!done && !active}
+                            onClick={() => done && setStep(s.id)}
+                            className={cn(
+                              "flex items-center gap-3 rounded-xl px-3 py-3 text-left transition-all",
+                              active && "bg-white/15 shadow-inner",
+                              done && !active && "cursor-pointer hover:bg-white/10",
+                              !active && !done && "opacity-45",
                             )}
-                          </div>
+                          >
+                            <span
+                              className={cn(
+                                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold",
+                                active || done ? "bg-white text-primary" : "bg-white/10 text-white/60",
+                              )}
+                            >
+                              {done ? <Check size={16} strokeWidth={3} /> : s.id}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">{s.label}</p>
+                              <p className="truncate text-sm font-semibold">{s.headline}</p>
+                            </div>
+                          </button>
                         );
                       })}
-                    </div>
-                  </div>
+                    </nav>
 
-                  <ModalDivider />
-
-                  {/* Body */}
-                  <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-7">
-                    <AnimatePresence mode="wait">
-                      {step === 1 && (
+                    <div className="relative hidden px-5 pb-6 sm:block">
+                      <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-white/60">
+                        <span>Progress</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-white/20">
                         <motion.div
-                          key="step1"
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.25 }}
-                        >
-                          <p className="mb-5 text-sm text-muted-foreground">
-                            Choose the position that best matches your situation. We welcome all experience levels.
-                          </p>
-                          <div className="space-y-3">
-                            {positions.map((pos) => {
-                              const PosIcon = pos.icon;
-                              return (
-                              <button
-                                key={pos.title}
-                                data-testid={`button-position-${pos.title.toLowerCase().replace(/\s+/g, "-")}`}
-                                onClick={() => setForm((f) => ({ ...f, position: pos.title }))}
-                                className={cn(
-                                  "w-full rounded-2xl border-2 p-4 text-left transition-all duration-200",
-                                  form.position === pos.title
-                                    ? "border-primary bg-primary/10 dark:bg-primary/15"
-                                    : "border-border hover:border-primary/30 dark:border-white/15 dark:hover:border-primary/40",
-                                )}
-                              >
-                                <div className="flex items-start justify-between">
-                                  <div className="flex items-start gap-3">
-                                    <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted">
-                                      <PosIcon size={16} className="text-muted-foreground" />
-                                    </div>
-                                    <div>
-                                      <p className="text-sm font-bold text-foreground">{pos.title}</p>
-                                      <p className="mt-0.5 text-xs text-muted-foreground">{pos.desc}</p>
-                                      <div className="mt-2.5 flex flex-wrap gap-1.5">
-                                        {pos.tags.map((tag) => (
-                                          <span key={tag} className="rounded-full border border-border px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                                            {tag}
-                                          </span>
-                                        ))}
+                          className="h-full rounded-full bg-white"
+                          initial={false}
+                          animate={{ width: `${progress}%` }}
+                          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                        />
+                      </div>
+                      <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-white/70">
+                        <Shield size={14} className="mt-0.5 shrink-0" />
+                        Your info stays private. Recruiters respond within 24–48 hrs.
+                      </p>
+                    </div>
+                  </aside>
+
+                  {/* —— Main panel —— */}
+                  <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
+                    <header className="shrink-0 border-b border-border px-5 py-5 sm:px-8 sm:py-6">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-primary">
+                        Driver application · Step {step} of {steps.length}
+                      </p>
+                      <h2 id="driver-app-title" className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                        {currentStep.headline}
+                      </h2>
+                    </header>
+
+                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-8">
+                      <AnimatePresence mode="wait">
+                        {step === 1 && (
+                          <StepPanel stepKey="step1">
+                            <p className="mb-5 max-w-md text-sm text-muted-foreground">
+                              Select the role that fits you. All paths include 24/7 dispatch support.
+                            </p>
+                            <div className="grid gap-3 sm:grid-cols-1">
+                              {positions.map((pos) => {
+                                const PosIcon = pos.icon;
+                                const selected = form.position === pos.title;
+                                return (
+                                  <button
+                                    key={pos.title}
+                                    type="button"
+                                    data-testid={`button-position-${pos.title.toLowerCase().replace(/\s+/g, "-")}`}
+                                    onClick={() => setForm((f) => ({ ...f, position: pos.title }))}
+                                    className={cn(
+                                      "group relative overflow-hidden rounded-xl border-2 p-0 text-left transition-all duration-200",
+                                      selected
+                                        ? "border-primary shadow-[0_8px_28px_hsl(var(--primary)/0.2)]"
+                                        : "border-border hover:border-primary/40",
+                                    )}
+                                  >
+                                    <div className={cn("absolute inset-0 bg-gradient-to-r opacity-80", pos.accent)} />
+                                    <div className="relative flex items-stretch gap-0">
+                                      <div
+                                        className={cn(
+                                          "flex w-14 shrink-0 items-center justify-center sm:w-16",
+                                          selected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                                        )}
+                                      >
+                                        <PosIcon size={22} />
+                                      </div>
+                                      <div className="flex flex-1 items-center justify-between gap-3 p-4">
+                                        <div>
+                                          <p className="font-bold text-foreground">{pos.title}</p>
+                                          <p className="mt-0.5 text-xs text-muted-foreground">{pos.desc}</p>
+                                          <div className="mt-2 flex flex-wrap gap-1.5">
+                                            {pos.tags.map((tag) => (
+                                              <span
+                                                key={tag}
+                                                className="rounded-md bg-background/80 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground"
+                                              >
+                                                {tag}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                        <div
+                                          className={cn(
+                                            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+                                            selected ? "border-primary bg-primary" : "border-border bg-background",
+                                          )}
+                                        >
+                                          {selected && <Check size={12} className="text-primary-foreground" strokeWidth={3} />}
+                                        </div>
                                       </div>
                                     </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </StepPanel>
+                        )}
+
+                        {step === 2 && (
+                          <StepPanel stepKey="step2">
+                            <div className="grid max-w-lg gap-4 sm:grid-cols-2">
+                              <FormField
+                                label="First name"
+                                required
+                                icon={<User size={14} />}
+                                placeholder="John"
+                                value={form.firstName}
+                                error={showStep2Error("firstName") ? step2Errors.firstName : undefined}
+                                onChange={(v) => setForm((f) => ({ ...f, firstName: v }))}
+                                onBlur={() => markStep2Touched("firstName")}
+                                testId="input-first-name"
+                              />
+                              <FormField
+                                label="Last name"
+                                required
+                                icon={<User size={14} />}
+                                placeholder="Doe"
+                                value={form.lastName}
+                                error={showStep2Error("lastName") ? step2Errors.lastName : undefined}
+                                onChange={(v) => setForm((f) => ({ ...f, lastName: v }))}
+                                onBlur={() => markStep2Touched("lastName")}
+                                testId="input-last-name"
+                              />
+                            </div>
+                            <div className="mt-4 max-w-lg space-y-4">
+                              <FormField
+                                label="Email"
+                                required
+                                icon={<Mail size={14} />}
+                                placeholder="john@example.com"
+                                type="email"
+                                value={form.email}
+                                error={showStep2Error("email") ? step2Errors.email : undefined}
+                                onChange={(v) => setForm((f) => ({ ...f, email: v }))}
+                                onBlur={() => markStep2Touched("email")}
+                                testId="input-email"
+                              />
+                              <FormField
+                                label="Phone"
+                                required
+                                icon={<Phone size={14} />}
+                                placeholder="(816) 608-8636"
+                                type="tel"
+                                inputMode="tel"
+                                value={form.phone}
+                                error={showStep2Error("phone") ? step2Errors.phone : undefined}
+                                onChange={(v) => setForm((f) => ({ ...f, phone: formatUsPhone(v) }))}
+                                onBlur={() => markStep2Touched("phone")}
+                                testId="input-phone"
+                              />
+                              <FormField
+                                label="Home address"
+                                required
+                                icon={<MapPin size={14} />}
+                                placeholder="City, State, ZIP"
+                                value={form.address}
+                                error={showStep2Error("address") ? step2Errors.address : undefined}
+                                onChange={(v) => setForm((f) => ({ ...f, address: v }))}
+                                onBlur={() => markStep2Touched("address")}
+                                testId="input-address"
+                              />
+                            </div>
+                          </StepPanel>
+                        )}
+
+                        {step === 3 && (
+                          <StepPanel stepKey="step3">
+                            <div className="max-w-xl space-y-5">
+                              {isCompanyDriver && (
+                                <>
+                                  <div>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                                      CDL class
+                                    </label>
+                                    <select
+                                      data-testid="select-cdl-type"
+                                      value={form.cdlType}
+                                      onChange={(e) => setForm((f) => ({ ...f, cdlType: e.target.value }))}
+                                      className="w-full rounded-lg border-2 border-border bg-muted/30 px-4 py-3 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    >
+                                      <option value="">Select CDL type…</option>
+                                      <option value="A">Class A — Tractor-trailer</option>
+                                      <option value="B">Class B — Heavy straight</option>
+                                      <option value="C">Class C — Passengers / Hazmat</option>
+                                    </select>
                                   </div>
-                                  <div className={cn(
-                                    "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
-                                    form.position === pos.title ? "border-primary bg-primary" : "border-border",
-                                  )}>
-                                    {form.position === pos.title && <div className="h-2 w-2 rounded-full bg-primary-foreground" />}
+
+                                  <div>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                                      Years of experience
+                                    </label>
+                                    <input
+                                      data-testid="input-experience-years"
+                                      type="number"
+                                      min="0"
+                                      max="50"
+                                      placeholder="e.g. 3"
+                                      value={form.experience}
+                                      onChange={(e) => setForm((f) => ({ ...f, experience: e.target.value }))}
+                                      className="w-full rounded-lg border-2 border-border bg-muted/30 px-4 py-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    />
                                   </div>
+                                </>
+                              )}
+
+                              {isOwnerOperator ? (
+                                <>
+                                  <LicenseUploadPair
+                                    frontValue={form.licenseFront}
+                                    backValue={form.licenseBack}
+                                    onFront={(name) => setForm((f) => ({ ...f, licenseFront: name }))}
+                                    onBack={(name) => setForm((f) => ({ ...f, licenseBack: name }))}
+                                  />
+                                  <FileUploadField
+                                    label="Medical card"
+                                    testId="upload-medical-card"
+                                    hint="PDF, JPG, PNG up to 10MB"
+                                    value={form.medicalCard}
+                                    onChange={(name) => setForm((f) => ({ ...f, medicalCard: name }))}
+                                  />
+                                  <FileUploadField
+                                    label="Annual truck inspection"
+                                    testId="upload-truck-inspection"
+                                    hint="PDF, JPG, PNG up to 10MB"
+                                    value={form.truckInspection}
+                                    onChange={(name) => setForm((f) => ({ ...f, truckInspection: name }))}
+                                  />
+                                  <TruckPhotosUpload
+                                    engine={form.truckEngine}
+                                    underEngine={form.truckUnderEngine}
+                                    tires={form.truckTires}
+                                    onEngine={(name) => setForm((f) => ({ ...f, truckEngine: name }))}
+                                    onUnderEngine={(name) => setForm((f) => ({ ...f, truckUnderEngine: name }))}
+                                    onTires={(name) => setForm((f) => ({ ...f, truckTires: name }))}
+                                  />
+                                  <ResumeUpload
+                                    value={form.resume}
+                                    onChange={(name) => setForm((f) => ({ ...f, resume: name }))}
+                                  />
+                                </>
+                              ) : isCompanyDriver ? (
+                                <>
+                                  <LicenseUploadPair
+                                    frontValue={form.licenseFront}
+                                    backValue={form.licenseBack}
+                                    onFront={(name) => setForm((f) => ({ ...f, licenseFront: name }))}
+                                    onBack={(name) => setForm((f) => ({ ...f, licenseBack: name }))}
+                                  />
+                                  <FileUploadField
+                                    label="Medical card"
+                                    testId="upload-medical-card"
+                                    hint="PDF, JPG, PNG up to 10MB"
+                                    value={form.medicalCard}
+                                    onChange={(name) => setForm((f) => ({ ...f, medicalCard: name }))}
+                                  />
+                                  <ResumeUpload
+                                    value={form.resume}
+                                    onChange={(name) => setForm((f) => ({ ...f, resume: name }))}
+                                  />
+                                </>
+                              ) : isInvestor ? (
+                                <>
+                                  <FileUploadField
+                                    label="Registration card (cap card)"
+                                    testId="upload-registration-card"
+                                    hint="PDF, JPG, PNG up to 10MB"
+                                    value={form.registrationCard}
+                                    onChange={(name) => setForm((f) => ({ ...f, registrationCard: name }))}
+                                  />
+                                  <FileUploadField
+                                    label="Annual truck inspection"
+                                    testId="upload-truck-inspection"
+                                    hint="PDF, JPG, PNG up to 10MB"
+                                    value={form.truckInspection}
+                                    onChange={(name) => setForm((f) => ({ ...f, truckInspection: name }))}
+                                  />
+                                  <TruckPhotosUpload
+                                    engine={form.truckEngine}
+                                    underEngine={form.truckUnderEngine}
+                                    tires={form.truckTires}
+                                    onEngine={(name) => setForm((f) => ({ ...f, truckEngine: name }))}
+                                    onUnderEngine={(name) => setForm((f) => ({ ...f, truckUnderEngine: name }))}
+                                    onTires={(name) => setForm((f) => ({ ...f, truckTires: name }))}
+                                  />
+                                </>
+                              ) : null}
+                            </div>
+                          </StepPanel>
+                        )}
+
+                        {step === 4 && (
+                          <StepPanel stepKey="step4">
+                            <p className="mb-5 text-sm text-muted-foreground">
+                              Double-check your details before sending to our recruitment team.
+                            </p>
+                            <div className="max-w-lg overflow-hidden rounded-xl border border-border">
+                              {[
+                                { label: "Role", value: form.position },
+                                { label: "Name", value: `${form.firstName} ${form.lastName}` },
+                                { label: "Email", value: form.email },
+                                { label: "Phone", value: form.phone },
+                                { label: "Address", value: form.address || "—" },
+                                ...(isCompanyDriver
+                                  ? [
+                                      { label: "CDL", value: form.cdlType ? `Class ${form.cdlType}` : "—" },
+                                      { label: "Experience", value: form.experience ? `${form.experience} yrs` : "—" },
+                                      { label: "License", value: form.licenseFront && form.licenseBack ? "Ready" : "—" },
+                                      { label: "Medical card", value: form.medicalCard ? "Ready" : "—" },
+                                    ]
+                                  : []),
+                                ...(isOwnerOperator
+                                  ? [
+                                      { label: "License", value: form.licenseFront && form.licenseBack ? "Ready" : "—" },
+                                      { label: "Medical card", value: form.medicalCard ? "Ready" : "—" },
+                                      { label: "Truck inspection", value: form.truckInspection ? "Ready" : "—" },
+                                      {
+                                        label: "Truck photos",
+                                        value:
+                                          form.truckEngine && form.truckUnderEngine && form.truckTires ? "Ready" : "—",
+                                      },
+                                    ]
+                                  : []),
+                                ...(isInvestor
+                                  ? [
+                                      { label: "Registration card", value: form.registrationCard ? "Ready" : "—" },
+                                      { label: "Truck inspection", value: form.truckInspection ? "Ready" : "—" },
+                                      {
+                                        label: "Truck photos",
+                                        value:
+                                          form.truckEngine && form.truckUnderEngine && form.truckTires ? "Ready" : "—",
+                                      },
+                                    ]
+                                  : []),
+                              ].map(({ label, value }, i) => (
+                                <div
+                                  key={label}
+                                  className={cn(
+                                    "flex items-center justify-between gap-4 px-4 py-3.5",
+                                    i % 2 === 0 ? "bg-muted/40" : "bg-background",
+                                  )}
+                                >
+                                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+                                  <span className="text-right text-sm font-semibold text-foreground">{value || "—"}</span>
                                 </div>
-                              </button>
-                            );
-                            })}
-                          </div>
-                        </motion.div>
-                      )}
-
-                      {step === 2 && (
-                        <motion.div
-                          key="step2"
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.25 }}
-                          className="space-y-4"
-                        >
-                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <FormField label="FIRST NAME" icon={<User size={14} />} placeholder="John" value={form.firstName} onChange={(v) => setForm((f) => ({ ...f, firstName: v }))} testId="input-first-name" />
-                            <FormField label="LAST NAME" icon={<User size={14} />} placeholder="Doe" value={form.lastName} onChange={(v) => setForm((f) => ({ ...f, lastName: v }))} testId="input-last-name" />
-                          </div>
-                          <FormField label="EMAIL ADDRESS" icon={<Mail size={14} />} placeholder="john@example.com" type="email" value={form.email} onChange={(v) => setForm((f) => ({ ...f, email: v }))} testId="input-email" />
-                          <FormField label="PHONE NUMBER" icon={<Phone size={14} />} placeholder="(555) 000-0000" type="tel" value={form.phone} onChange={(v) => setForm((f) => ({ ...f, phone: v }))} testId="input-phone" />
-                          <FormField label="HOME ADDRESS" icon={<MapPin size={14} />} placeholder="City, State, ZIP" value={form.address} onChange={(v) => setForm((f) => ({ ...f, address: v }))} testId="input-address" />
-                        </motion.div>
-                      )}
-
-                      {step === 3 && (
-                        <motion.div
-                          key="step3"
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.25 }}
-                          className="space-y-5"
-                        >
-                          <div>
-                            <label className="mb-2 block text-[10px] font-bold tracking-widest text-muted-foreground">CHOOSE YOUR CDL TYPE</label>
-                            <select
-                              data-testid="select-cdl-type"
-                              value={form.cdlType}
-                              onChange={(e) => setForm((f) => ({ ...f, cdlType: e.target.value }))}
-                              className="w-full appearance-none rounded-xl border-2 border-border bg-background px-4 py-3 text-sm text-foreground transition-colors focus:border-primary focus:outline-none"
-                            >
-                              <option value="">Select CDL Type...</option>
-                              <option value="A">Class A — Full Tractor-Trailer</option>
-                              <option value="B">Class B — Heavy Straight Vehicle</option>
-                              <option value="C">Class C — Passengers/Hazmat</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="mb-2 block text-[10px] font-bold tracking-widest text-muted-foreground">YEARS OF COMMERCIAL DRIVING EXPERIENCE?</label>
-                            <input
-                              data-testid="input-experience-years"
-                              type="number"
-                              min="0"
-                              max="50"
-                              placeholder="e.g. 3"
-                              value={form.experience}
-                              onChange={(e) => setForm((f) => ({ ...f, experience: e.target.value }))}
-                              className="w-full rounded-xl border-2 border-border bg-background px-4 py-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="mb-2 block text-[10px] font-bold tracking-widest text-muted-foreground">DRIVER LICENSE (BOTH SIDES)</label>
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                              {["Front side", "Back side"].map((side) => (
-                                <label key={side} data-testid={`upload-license-${side.toLowerCase().replace(" ", "-")}`} className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border p-4 transition-all hover:border-primary/50 hover:bg-primary/5">
-                                  <Upload size={18} className="text-muted-foreground" />
-                                  <span className="text-xs font-semibold text-muted-foreground">{side}</span>
-                                  <span className="text-[10px] text-muted-foreground/70">PDF, JPG, PNG</span>
-                                  <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" />
-                                </label>
                               ))}
                             </div>
-                          </div>
+                            <p className="mt-5 max-w-lg text-xs leading-relaxed text-muted-foreground">
+                              By submitting, you agree to NYBC Trucking&apos;s privacy policy and consent to recruitment contact.
+                            </p>
+                          </StepPanel>
+                        )}
+                      </AnimatePresence>
+                    </div>
 
-                          <div>
-                            <label className="mb-2 block text-[10px] font-bold tracking-widest text-muted-foreground">MEDICAL CARD</label>
-                            <label data-testid="upload-medical-card" className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-border p-4 transition-all hover:border-primary/50 hover:bg-primary/5">
-                              <Upload size={18} className="shrink-0 text-muted-foreground" />
-                              <div>
-                                <p className="text-xs font-semibold text-foreground">Choose file</p>
-                                <p className="text-[10px] text-muted-foreground">PDF, JPG, PNG up to 10MB</p>
-                              </div>
-                              <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" />
-                            </label>
-                          </div>
-
-                          <div>
-                            <label className="mb-2 block text-[10px] font-bold tracking-widest text-muted-foreground">RESUME / DOCUMENT <span className="font-normal normal-case text-muted-foreground/70">(optional)</span></label>
-                            <label data-testid="upload-resume" className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-border p-4 transition-all hover:border-primary/50 hover:bg-primary/5">
-                              <FileText size={18} className="shrink-0 text-muted-foreground" />
-                              <div>
-                                <p className="text-xs font-semibold text-foreground">Attach resume (optional)</p>
-                                <p className="text-[10px] text-muted-foreground">PDF, DOCX up to 10MB</p>
-                              </div>
-                              <input type="file" className="hidden" accept=".pdf,.doc,.docx" />
-                            </label>
-                          </div>
-                        </motion.div>
-                      )}
-
-                      {step === 4 && (
-                        <motion.div
-                          key="step4"
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.25 }}
-                        >
-                          <p className="mb-5 text-sm text-muted-foreground">Review your application before submitting. Everything looks good?</p>
-
-                          <div className="space-y-3">
-                            {[
-                              { label: "Position", value: form.position },
-                              { label: "Name", value: `${form.firstName} ${form.lastName}` },
-                              { label: "Email", value: form.email },
-                              { label: "Phone", value: form.phone },
-                              { label: "Address", value: form.address || "—" },
-                              { label: "CDL Type", value: form.cdlType ? `Class ${form.cdlType}` : "—" },
-                              { label: "Experience", value: form.experience ? `${form.experience} years` : "—" },
-                            ].map(({ label, value }) => (
-                              <div key={label} className="flex items-start justify-between border-b border-border py-3 last:border-0">
-                                <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
-                                <span className="max-w-[60%] text-right text-sm font-semibold text-foreground">{value || "—"}</span>
-                              </div>
-                            ))}
-                          </div>
-
-                          <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-                            By submitting, you agree to NYBC Trucking&apos;s Driver Privacy Policy and consent to being contacted by our recruitment team.
-                          </p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  <ModalDivider />
-
-                  {/* Footer */}
-                  <div className="flex shrink-0 items-center justify-between px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-7 sm:py-5">
-                    {step > 1 ? (
-                      <button
-                        data-testid="button-back"
-                        onClick={() => setStep((s) => s - 1)}
-                        className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        <ChevronLeft size={16} />
-                        Back
-                      </button>
-                    ) : (
-                      <div />
-                    )}
-
-                    <span className="text-sm font-semibold text-muted-foreground">{step} / 4</span>
-
-                    {step < 4 ? (
-                      <button
-                        data-testid="button-continue"
-                        onClick={() => setStep((s) => s + 1)}
-                        disabled={!canContinue()}
-                        className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-bold tracking-wide text-primary-foreground shadow-[0_4px_20px_hsl(var(--primary)/0.35)] transition-all hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        Continue
-                        <ChevronRight size={16} />
-                      </button>
-                    ) : (
-                      <>
+                    <footer className="shrink-0 border-t border-border bg-muted/20 px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8">
                       {submitError && (
-                        <p className="text-sm text-destructive font-semibold mb-2">{submitError}</p>
+                        <p className="mb-3 text-center text-sm font-semibold text-destructive">{submitError}</p>
                       )}
-                      <button
-                        data-testid="button-submit-application"
-                        onClick={handleSubmit}
-                        className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-bold tracking-wide text-primary-foreground shadow-[0_4px_20px_hsl(var(--primary)/0.35)] transition-all hover:bg-primary/90"
-                      >
-                        Submit
-                        <Check size={16} />
-                      </button>
-                      </>
-                    )}
+                      <div className="flex items-center gap-3">
+                        {step > 1 ? (
+                          <button
+                            type="button"
+                            data-testid="button-back"
+                            onClick={() => setStep((s) => s - 1)}
+                            className="rounded-lg border border-border px-4 py-3 text-sm font-bold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                          >
+                            Back
+                          </button>
+                        ) : (
+                          <div className="hidden w-[72px] sm:block" />
+                        )}
+
+                        <div className="flex-1 sm:hidden">
+                          <div className="h-1 overflow-hidden rounded-full bg-border">
+                            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+                          </div>
+                        </div>
+
+                        {step < 4 ? (
+                          <button
+                            type="button"
+                            data-testid="button-continue"
+                            onClick={handleContinue}
+                            disabled={!canContinue()}
+                            className="ml-auto flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary py-3.5 text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_6px_24px_hsl(var(--primary)/0.35)] transition-all hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none sm:px-10"
+                          >
+                            Continue
+                            <ArrowRight size={16} />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            data-testid="button-submit-application"
+                            onClick={handleSubmit}
+                            disabled={submitting}
+                            className="ml-auto flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary py-3.5 text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_6px_24px_hsl(var(--primary)/0.35)] transition-all hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none sm:px-10"
+                          >
+                            {submitting ? "Uploading…" : "Submit application"}
+                            <Check size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </footer>
                   </div>
                 </>
               )}
@@ -482,7 +776,40 @@ export function DriverApplicationModal() {
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
+  );
+}
+
+function StepPanel({ stepKey, children }: { stepKey: string; children: React.ReactNode }) {
+  return (
+    <motion.div
+      key={stepKey}
+      initial={{ opacity: 0, x: 24 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -24 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function SuccessPanel() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex flex-1 flex-col items-center justify-center px-8 py-16 text-center sm:py-24"
+    >
+      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-emerald-500/15">
+        <Check size={40} className="text-emerald-600 dark:text-emerald-400" strokeWidth={2.5} />
+      </div>
+      <h2 className="mb-2 text-2xl font-bold text-emerald-700 dark:text-emerald-400">You&apos;re on the list!</h2>
+      <p className="max-w-sm text-emerald-700/70 dark:text-emerald-400/80">
+        Application sent successfully. Our team will reach out within 24–48 hours.
+      </p>
+    </motion.div>
   );
 }
 
@@ -491,32 +818,274 @@ function FormField({
   icon,
   placeholder,
   type = "text",
+  inputMode,
+  required = false,
   value,
+  error,
   onChange,
+  onBlur,
   testId,
 }: {
   label: string;
   icon: React.ReactNode;
   placeholder: string;
   type?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  required?: boolean;
   value: string;
+  error?: string;
   onChange: (v: string) => void;
+  onBlur?: () => void;
   testId: string;
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-[10px] font-bold tracking-widest text-muted-foreground">{label}</label>
+      <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        {label}
+        {required && <span className="text-destructive"> *</span>}
+      </label>
       <div className="relative">
         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">{icon}</span>
         <input
           data-testid={testId}
           type={type}
+          inputMode={inputMode}
           placeholder={placeholder}
           value={value}
+          required={required}
+          aria-invalid={!!error}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-xl border-2 border-border bg-background py-3 pl-9 pr-4 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+          onBlur={onBlur}
+          className={cn(
+            "w-full rounded-lg border-2 bg-muted/30 py-3 pl-10 pr-4 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2",
+            error
+              ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+              : "border-border focus:border-primary focus:ring-primary/20",
+          )}
+        />
+      </div>
+      {error && <p className="mt-1.5 text-xs font-medium text-destructive">{error}</p>}
+    </div>
+  );
+}
+
+function LicenseUploadPair({
+  frontValue,
+  backValue,
+  onFront,
+  onBack,
+}: {
+  frontValue: File | null;
+  backValue: File | null;
+  onFront: (file: File | null) => void;
+  onBack: (file: File | null) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        Driver license (both sides)
+      </label>
+      <div className="grid grid-cols-2 gap-3">
+        <FileDropSlot
+          testId="upload-license-front-side"
+          title="Front side"
+          hint="PDF, JPG, PNG"
+          value={frontValue}
+          onChange={onFront}
+        />
+        <FileDropSlot
+          testId="upload-license-back-side"
+          title="Back side"
+          hint="PDF, JPG, PNG"
+          value={backValue}
+          onChange={onBack}
         />
       </div>
     </div>
+  );
+}
+
+function TruckPhotosUpload({
+  engine,
+  underEngine,
+  tires,
+  onEngine,
+  onUnderEngine,
+  onTires,
+}: {
+  engine: File | null;
+  underEngine: File | null;
+  tires: File | null;
+  onEngine: (file: File | null) => void;
+  onUnderEngine: (file: File | null) => void;
+  onTires: (file: File | null) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        Please upload truck pictures (engine, under engine, tires)
+      </label>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <FileDropSlot testId="upload-truck-engine" title="Engine" value={engine} onChange={onEngine} compact />
+        <FileDropSlot
+          testId="upload-truck-under-engine"
+          title="Under engine"
+          value={underEngine}
+          onChange={onUnderEngine}
+          compact
+        />
+        <FileDropSlot testId="upload-truck-tires" title="Tires" value={tires} onChange={onTires} compact />
+      </div>
+    </div>
+  );
+}
+
+function FileUploadField({
+  label,
+  testId,
+  hint,
+  value,
+  onChange,
+}: {
+  label: string;
+  testId: string;
+  hint: string;
+  value: File | null;
+  onChange: (file: File | null) => void;
+}) {
+  const hasFile = !!value;
+
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">{label}</label>
+      <label
+        data-testid={testId}
+        className={cn(
+          "flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed p-4 transition-colors",
+          hasFile
+            ? "border-emerald-500 bg-emerald-500/10 hover:border-emerald-500 hover:bg-emerald-500/15"
+            : "border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5",
+        )}
+      >
+        <span
+          className={cn(
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+            hasFile ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-muted text-muted-foreground",
+          )}
+        >
+          {hasFile ? <Check size={18} strokeWidth={2.5} /> : <Upload size={18} />}
+        </span>
+        <div className="min-w-0">
+          <p className={cn("truncate text-xs font-semibold", hasFile ? "text-emerald-700 dark:text-emerald-400" : "text-foreground")}>
+            {value?.name || "Choose file"}
+          </p>
+          <p className={cn("text-[10px]", hasFile ? "text-emerald-600/80 dark:text-emerald-400/80" : "text-muted-foreground")}>
+            {hasFile ? "File ready" : hint}
+          </p>
+        </div>
+        <input
+          type="file"
+          className="hidden"
+          accept=".pdf,.jpg,.jpeg,.png"
+          onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+        />
+      </label>
+    </div>
+  );
+}
+
+function ResumeUpload({ value, onChange }: { value: File | null; onChange: (file: File | null) => void }) {
+  const hasFile = !!value;
+
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        Resume / work history <span className="font-normal normal-case text-muted-foreground/70">(optional)</span>
+      </label>
+      <label
+        data-testid="upload-resume"
+        className={cn(
+          "flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed p-4 transition-colors",
+          hasFile
+            ? "border-emerald-500 bg-emerald-500/10 hover:border-emerald-500 hover:bg-emerald-500/15"
+            : "border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5",
+        )}
+      >
+        <span
+          className={cn(
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+            hasFile ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-muted text-muted-foreground",
+          )}
+        >
+          {hasFile ? <Check size={18} strokeWidth={2.5} /> : <FileText size={18} />}
+        </span>
+        <div className="min-w-0">
+          <p className={cn("truncate text-xs font-semibold", hasFile ? "text-emerald-700 dark:text-emerald-400" : "text-foreground")}>
+            {value?.name || "Attach resume (optional)"}
+          </p>
+          <p className={cn("text-[10px]", hasFile ? "text-emerald-600/80 dark:text-emerald-400/80" : "text-muted-foreground")}>
+            {hasFile ? "File ready" : "PDF, DOCX up to 10MB — click or drag and drop"}
+          </p>
+        </div>
+        <input
+          type="file"
+          className="hidden"
+          accept=".pdf,.doc,.docx"
+          onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+        />
+      </label>
+    </div>
+  );
+}
+
+function FileDropSlot({
+  testId,
+  title,
+  hint = "Choose file",
+  value,
+  onChange,
+  compact = false,
+}: {
+  testId: string;
+  title: string;
+  hint?: string;
+  value: File | null;
+  onChange: (file: File | null) => void;
+  compact?: boolean;
+}) {
+  const hasFile = !!value;
+
+  return (
+    <label
+      data-testid={testId}
+      className={cn(
+        "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed text-center transition-colors",
+        compact ? "p-4" : "p-5",
+        hasFile
+          ? "border-emerald-500 bg-emerald-500/10 hover:border-emerald-500 hover:bg-emerald-500/15"
+          : "border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5",
+      )}
+    >
+      <span
+        className={cn(
+          "flex h-9 w-9 items-center justify-center rounded-lg",
+          hasFile ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-muted text-muted-foreground",
+        )}
+      >
+        {hasFile ? <Check size={16} strokeWidth={2.5} /> : <Upload size={16} />}
+      </span>
+      <span className={cn("text-xs font-bold uppercase tracking-wide", hasFile ? "text-emerald-700 dark:text-emerald-400" : "text-foreground")}>
+        {title}
+      </span>
+      <span className={cn("truncate px-2 text-[10px]", hasFile ? "text-emerald-600/80 dark:text-emerald-400/80" : "text-muted-foreground")}>
+        {value?.name || hint}
+      </span>
+      <input
+        type="file"
+        className="hidden"
+        accept=".pdf,.jpg,.jpeg,.png"
+        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+      />
+    </label>
   );
 }

@@ -78,8 +78,8 @@ function App() {
                 <Router />
                 <Footer />
               </div>
-              <DriverApplicationModal />
             </WouterRouter>
+            <DriverApplicationModal />
             <Toaster />
           </TooltipProvider>
         </QueryClientProvider>

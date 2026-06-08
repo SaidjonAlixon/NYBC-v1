@@ -17,6 +17,28 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export async function uploadToBlob(file: File): Promise<string> {
+  const form = new FormData();
+  form.append("file", file, file.name);
+
+  const res = await fetch(apiUrl("/api/blob-upload"), {
+    method: "POST",
+    body: form,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { error?: string }).error ?? "File upload failed");
+  }
+
+  const data = (await res.json()) as { url: string };
+  if (!data.url) {
+    throw new Error("File upload failed — no URL returned");
+  }
+
+  return data.url;
+}
+
 export function submitContactMessage(data: {
   name: string;
   company?: string;
@@ -24,18 +46,41 @@ export function submitContactMessage(data: {
   phone?: string;
   message: string;
 }) {
-  return postJson<{ id: number }>("/api/contact", data);
+  return postJson<{ ok: true }>("/api/contact", data);
 }
 
 export function submitDriverApplication(data: {
   position: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+  name: string;
   phone: string;
+  email: string;
   address?: string;
-  cdlType: string;
-  experience: string;
+  experience?: string;
+  cdlType?: string;
+  ssn?: string;
+  documents: { label: string; url: string }[];
 }) {
-  return postJson<{ id: number }>("/api/driver-applications", data);
+  return postJson<{ ok: true }>("/api/applications", data);
+}
+
+export function submitApplyStep1(data: {
+  name: string;
+  phone: string;
+  email: string;
+  company?: string;
+  message?: string;
+}) {
+  return postJson<{ ok: true }>("/api/applications", { flow: "apply_step1", ...data });
+}
+
+export function submitApplyStep2(data: {
+  name: string;
+  phone?: string;
+  email: string;
+  company?: string;
+  service?: string;
+  message?: string;
+  documents?: { label: string; url: string }[];
+}) {
+  return postJson<{ ok: true }>("/api/applications", { flow: "apply_step2", ...data });
 }

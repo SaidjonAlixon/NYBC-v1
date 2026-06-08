@@ -141,8 +141,10 @@ export const ApplicationCta = () => {
         <p className="text-xl text-primary-foreground/80 mb-8">Apply now and get on the road in 10 days</p>
         <button
           type="button"
-          onClick={openModal}
-          className="px-10 py-5 bg-background text-foreground font-bold tracking-widest text-lg hover:scale-105 transition-all shadow-xl"
+          data-testid="button-apply-today-drivers"
+          aria-haspopup="dialog"
+          onClick={() => openModal()}
+          className="cursor-pointer px-10 py-5 bg-background text-foreground font-bold tracking-widest text-lg shadow-xl transition-all hover:scale-105 hover:bg-background/95"
         >
           APPLY TODAY
         </button>

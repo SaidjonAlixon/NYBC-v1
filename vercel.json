@@ -4,5 +4,17 @@
   "buildCommand": "pnpm --filter @workspace/truck-logistics run build",
   "outputDirectory": "artifacts/truck-logistics/dist/public",
   "framework": "vite",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "functions": {
+    "api/blob-upload.ts": {
+      "maxDuration": 15
+    },
+    "api/applications.ts": {
+      "maxDuration": 15
+    }
+  },
+  "rewrites": [
+    { "source": "/api/contact", "destination": "/api/applications" },
+    { "source": "/api/quote", "destination": "/api/applications" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

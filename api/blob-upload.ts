@@ -1,8 +1,20 @@
 import { put } from "@vercel/blob";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import Busboy from "busboy";
-import type { Request, Response } from "express";
-import multer, { type File as MulterFile } from "multer";
+import type { Request as ExpressRequest, Response as ExpressResponse } from "express";
+import multer from "multer";
+
+type UploadedFile = {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+  destination: string;
+  filename: string;
+  path: string;
+};
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -22,7 +34,7 @@ export const uploadMiddleware = multer({
   limits: { fileSize: MAX_BYTES },
 });
 
-export async function uploadFileToBlob(file: MulterFile): Promise<string> {
+export async function uploadFileToBlob(file: UploadedFile): Promise<string> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     throw new Error("BLOB_READ_WRITE_TOKEN is not configured");
   }
@@ -37,14 +49,15 @@ export async function uploadFileToBlob(file: MulterFile): Promise<string> {
   return blob.url;
 }
 
-export async function directBlobUploadHandler(req: Request, res: Response) {
-  if (!req.file) {
+export async function directBlobUploadHandler(req: ExpressRequest, res: ExpressResponse) {
+  const file = req.file as UploadedFile | undefined;
+  if (!file) {
     res.status(400).json({ error: "No file provided" });
     return;
   }
 
   try {
-    const url = await uploadFileToBlob(req.file);
+    const url = await uploadFileToBlob(file);
     res.status(200).json({ url });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Upload failed";
@@ -52,7 +65,7 @@ export async function directBlobUploadHandler(req: Request, res: Response) {
   }
 }
 
-export async function runBlobUpload(body: HandleUploadBody, request: Request) {
+export async function runBlobUpload(body: HandleUploadBody, request: ExpressRequest) {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     throw new Error("BLOB_READ_WRITE_TOKEN is not configured");
   }
@@ -70,7 +83,7 @@ export async function runBlobUpload(body: HandleUploadBody, request: Request) {
   });
 }
 
-export async function blobUploadHandler(req: Request, res: Response) {
+export async function blobUploadHandler(req: ExpressRequest, res: ExpressResponse) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
     return;
@@ -85,7 +98,7 @@ export async function blobUploadHandler(req: Request, res: Response) {
   }
 }
 
-export async function blobUploadRoute(req: Request, res: Response) {
+export async function blobUploadRoute(req: ExpressRequest, res: ExpressResponse) {
   if (req.file) {
     await directBlobUploadHandler(req, res);
     return;
@@ -95,7 +108,7 @@ export async function blobUploadRoute(req: Request, res: Response) {
 
 async function parseMultipartFile(
   req: NodeJS.ReadableStream & { headers?: Record<string, string | string[] | undefined> },
-): Promise<MulterFile> {
+): Promise<UploadedFile> {
   return new Promise((resolve, reject) => {
     const busboy = Busboy({
       headers: req.headers as Busboy.BusboyConfig["headers"],
@@ -124,13 +137,15 @@ async function parseMultipartFile(
       }
       const buffer = Buffer.concat(chunks);
       resolve({
-        ...fileMeta,
+        fieldname: fileMeta.fieldname,
+        originalname: fileMeta.filename,
+        encoding: fileMeta.encoding,
+        mimetype: fileMeta.mimetype,
         buffer,
         size: buffer.length,
         destination: "",
         filename: fileMeta.filename,
         path: "",
-        stream: undefined as unknown as NodeJS.ReadableStream,
       });
     });
 
@@ -166,7 +181,7 @@ export default async function handler(
 
     const jsonResponse = await runBlobUpload(
       req.body as HandleUploadBody,
-      req as unknown as Request,
+      req as unknown as ExpressRequest,
     );
     res.status(200).json(jsonResponse);
   } catch (error) {

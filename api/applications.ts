@@ -1,4 +1,5 @@
-import express, { type Express, type Request, type Response } from "express";
+import express from "express";
+import type { Express, Request as ExpressRequest, Response as ExpressResponse } from "express";
 import serverless from "serverless-http";
 import { blobUploadRoute, uploadMiddleware } from "./blob-upload.js";
 
@@ -162,7 +163,7 @@ function formatQuote(body: Record<string, unknown>): string {
     .join("\n");
 }
 
-async function handleApplicationsPost(req: Request, res: Response) {
+async function handleApplicationsPost(req: ExpressRequest, res: ExpressResponse) {
   const body = req.body as Record<string, unknown>;
   const flow = typeof body.flow === "string" ? body.flow : "";
 
@@ -214,7 +215,7 @@ async function handleApplicationsPost(req: Request, res: Response) {
   }
 }
 
-async function handleContactPost(req: Request, res: Response) {
+async function handleContactPost(req: ExpressRequest, res: ExpressResponse) {
   const body = req.body as Record<string, unknown>;
   if (!body.name || !body.email || !body.message) {
     res.status(400).json({ error: "name, email, and message are required" });
@@ -230,7 +231,7 @@ async function handleContactPost(req: Request, res: Response) {
   }
 }
 
-async function handleQuotePost(req: Request, res: Response) {
+async function handleQuotePost(req: ExpressRequest, res: ExpressResponse) {
   const body = req.body as Record<string, unknown>;
   if (!body.name || !body.email) {
     res.status(400).json({ error: "name and email are required" });
@@ -250,7 +251,11 @@ export const app: Express = express();
 
 app.use(express.json({ limit: "1mb" }));
 
-app.post("/api/blob-upload", uploadMiddleware.single("file"), blobUploadRoute);
+app.post(
+  "/api/blob-upload",
+  uploadMiddleware.single("file") as unknown as express.RequestHandler,
+  blobUploadRoute,
+);
 app.post("/api/applications", handleApplicationsPost);
 app.post("/api/contact", handleContactPost);
 app.post("/api/quote", handleQuotePost);

@@ -10,11 +10,13 @@
     },
     "api/applications.ts": {
       "maxDuration": 15
+    },
+    "api/contact.ts": {
+      "maxDuration": 15
+    },
+    "api/quote.ts": {
+      "maxDuration": 15
     }
   },
-  "rewrites": [
-    { "source": "/api/contact", "destination": "/api/applications" },
-    { "source": "/api/quote", "destination": "/api/applications" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

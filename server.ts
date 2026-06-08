@@ -6,7 +6,7 @@ dotenv.config({
   path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".env"),
 });
 
-import { app } from "./api/applications.js";
+import { app } from "./api/app.js";
 
 const port = Number(process.env.API_PORT ?? "4000");
 

@@ -12,5 +12,5 @@
     "noEmit": true,
     "isolatedModules": true
   },
-  "include": ["./*.ts"]
+  "include": ["./*.ts", "./lib/*.ts"]
 }

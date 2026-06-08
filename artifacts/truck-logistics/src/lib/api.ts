@@ -1,4 +1,7 @@
-const API_BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
+// Production: always same-origin /api (Vercel serverless). Dev: optional VITE_API_URL or Vite proxy.
+const API_BASE = (
+  import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL ?? "")
+).replace(/\/$/, "");
 
 function apiUrl(path: string) {
   return `${API_BASE}${path}`;

@@ -1,4 +1,4 @@
-import { processApplication } from "./lib/shared.js";
+import { processContact } from "./lib/shared.js";
 
 export const config = { maxDuration: 15 };
 
@@ -13,6 +13,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  const result = await processApplication((req.body ?? {}) as Record<string, unknown>);
+  const result = await processContact((req.body ?? {}) as Record<string, unknown>);
   res.status(result.status).json(result.body);
 }

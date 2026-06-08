@@ -22,7 +22,30 @@ import { useApplicationModal } from "@/contexts/ApplicationModalContext";
 import { useLenisControl } from "@/contexts/LenisContext";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { Logo } from "@/components/layout/Logo";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+
+interface FileUploadState {
+  name: string;
+  url: string | null;
+  status: "uploading" | "uploaded" | "error";
+  error?: string;
+}
+
+type FileFieldKey =
+  | "licenseFront"
+  | "licenseBack"
+  | "medicalCard"
+  | "truckInspection"
+  | "truckEngine"
+  | "truckUnderEngine"
+  | "truckTires"
+  | "registrationCard"
+  | "resume";
+
+function isUploaded(field: FileUploadState | null): boolean {
+  return field?.status === "uploaded" && !!field.url;
+}
 
 const steps = [
   { id: 1, label: "Role", headline: "Choose your path", icon: Truck },
@@ -70,15 +93,15 @@ interface FormData {
   address: string;
   cdlType: string;
   experience: string;
-  licenseFront: File | null;
-  licenseBack: File | null;
-  medicalCard: File | null;
-  truckInspection: File | null;
-  truckEngine: File | null;
-  truckUnderEngine: File | null;
-  truckTires: File | null;
-  registrationCard: File | null;
-  resume: File | null;
+  licenseFront: FileUploadState | null;
+  licenseBack: FileUploadState | null;
+  medicalCard: FileUploadState | null;
+  truckInspection: FileUploadState | null;
+  truckEngine: FileUploadState | null;
+  truckUnderEngine: FileUploadState | null;
+  truckTires: FileUploadState | null;
+  registrationCard: FileUploadState | null;
+  resume: FileUploadState | null;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -188,6 +211,51 @@ export function DriverApplicationModal() {
     setStep2Touched((prev) => ({ ...prev, [field]: true }));
   };
 
+  const isAnyFileUploading = (
+    [
+      "licenseFront",
+      "licenseBack",
+      "medicalCard",
+      "truckInspection",
+      "truckEngine",
+      "truckUnderEngine",
+      "truckTires",
+      "registrationCard",
+      "resume",
+    ] as FileFieldKey[]
+  ).some((key) => form[key]?.status === "uploading");
+
+  const handleFileUpload = async (field: FileFieldKey, file: File | null) => {
+    if (!file) {
+      setForm((f) => ({ ...f, [field]: null }));
+      return;
+    }
+
+    setForm((f) => ({
+      ...f,
+      [field]: { name: file.name, url: null, status: "uploading" },
+    }));
+
+    try {
+      const { uploadToBlob } = await import("@/lib/api");
+      const url = await uploadToBlob(file);
+      setForm((f) => ({
+        ...f,
+        [field]: { name: file.name, url, status: "uploaded" },
+      }));
+    } catch (err) {
+      setForm((f) => ({
+        ...f,
+        [field]: {
+          name: file.name,
+          url: null,
+          status: "error",
+          error: err instanceof Error ? err.message : "Upload failed",
+        },
+      }));
+    }
+  };
+
   const handleContinue = () => {
     if (step === 2 && !isStep2Valid) {
       setStep2Attempted(true);
@@ -200,6 +268,7 @@ export function DriverApplicationModal() {
     if (step === 1) return !!form.position;
     if (step === 2) return isStep2Valid;
     if (step === 3) {
+      if (isAnyFileUploading) return false;
       if (isOwnerOperator || isInvestor) return true;
       return !!(form.cdlType && form.experience);
     }
@@ -207,28 +276,27 @@ export function DriverApplicationModal() {
   };
 
   const handleSubmit = async () => {
+    if (isAnyFileUploading) return;
     setSubmitError(null);
     setSubmitting(true);
     try {
-      const { uploadToBlob, submitDriverApplication } = await import("@/lib/api");
+      const { submitDriverApplication } = await import("@/lib/api");
 
-      const docFields: { file: File | null; label: string }[] = [];
-      if (form.licenseFront) docFields.push({ file: form.licenseFront, label: "Driver License (Front)" });
-      if (form.licenseBack) docFields.push({ file: form.licenseBack, label: "Driver License (Back)" });
-      if (form.medicalCard) docFields.push({ file: form.medicalCard, label: "Medical Card" });
-      if (form.truckInspection) docFields.push({ file: form.truckInspection, label: "Annual Truck Inspection" });
-      if (form.truckEngine) docFields.push({ file: form.truckEngine, label: "Truck Photo — Engine" });
-      if (form.truckUnderEngine) docFields.push({ file: form.truckUnderEngine, label: "Truck Photo — Under Engine" });
-      if (form.truckTires) docFields.push({ file: form.truckTires, label: "Truck Photo — Tires" });
-      if (form.registrationCard) docFields.push({ file: form.registrationCard, label: "Registration Card (Cap Card)" });
-      if (form.resume) docFields.push({ file: form.resume, label: "Resume" });
+      const docFields: { key: FileFieldKey; label: string }[] = [
+        { key: "licenseFront", label: "Driver License (Front)" },
+        { key: "licenseBack", label: "Driver License (Back)" },
+        { key: "medicalCard", label: "Medical Card" },
+        { key: "truckInspection", label: "Annual Truck Inspection" },
+        { key: "truckEngine", label: "Truck Photo — Engine" },
+        { key: "truckUnderEngine", label: "Truck Photo — Under Engine" },
+        { key: "truckTires", label: "Truck Photo — Tires" },
+        { key: "registrationCard", label: "Registration Card (Cap Card)" },
+        { key: "resume", label: "Resume" },
+      ];
 
-      const documents = await Promise.all(
-        docFields.map(async ({ file, label }) => ({
-          label,
-          url: await uploadToBlob(file!),
-        })),
-      );
+      const documents = docFields
+        .filter(({ key }) => isUploaded(form[key]))
+        .map(({ key, label }) => ({ label, url: form[key]!.url! }));
 
       await submitDriverApplication({
         position: form.position,
@@ -576,34 +644,34 @@ export function DriverApplicationModal() {
                                   <LicenseUploadPair
                                     frontValue={form.licenseFront}
                                     backValue={form.licenseBack}
-                                    onFront={(name) => setForm((f) => ({ ...f, licenseFront: name }))}
-                                    onBack={(name) => setForm((f) => ({ ...f, licenseBack: name }))}
+                                    onFront={(file) => handleFileUpload("licenseFront", file)}
+                                    onBack={(file) => handleFileUpload("licenseBack", file)}
                                   />
                                   <FileUploadField
                                     label="Medical card"
                                     testId="upload-medical-card"
                                     hint="PDF, JPG, PNG up to 10MB"
                                     value={form.medicalCard}
-                                    onChange={(name) => setForm((f) => ({ ...f, medicalCard: name }))}
+                                    onChange={(file) => handleFileUpload("medicalCard", file)}
                                   />
                                   <FileUploadField
                                     label="Annual truck inspection"
                                     testId="upload-truck-inspection"
                                     hint="PDF, JPG, PNG up to 10MB"
                                     value={form.truckInspection}
-                                    onChange={(name) => setForm((f) => ({ ...f, truckInspection: name }))}
+                                    onChange={(file) => handleFileUpload("truckInspection", file)}
                                   />
                                   <TruckPhotosUpload
                                     engine={form.truckEngine}
                                     underEngine={form.truckUnderEngine}
                                     tires={form.truckTires}
-                                    onEngine={(name) => setForm((f) => ({ ...f, truckEngine: name }))}
-                                    onUnderEngine={(name) => setForm((f) => ({ ...f, truckUnderEngine: name }))}
-                                    onTires={(name) => setForm((f) => ({ ...f, truckTires: name }))}
+                                    onEngine={(file) => handleFileUpload("truckEngine", file)}
+                                    onUnderEngine={(file) => handleFileUpload("truckUnderEngine", file)}
+                                    onTires={(file) => handleFileUpload("truckTires", file)}
                                   />
                                   <ResumeUpload
                                     value={form.resume}
-                                    onChange={(name) => setForm((f) => ({ ...f, resume: name }))}
+                                    onChange={(file) => handleFileUpload("resume", file)}
                                   />
                                 </>
                               ) : isCompanyDriver ? (
@@ -611,19 +679,19 @@ export function DriverApplicationModal() {
                                   <LicenseUploadPair
                                     frontValue={form.licenseFront}
                                     backValue={form.licenseBack}
-                                    onFront={(name) => setForm((f) => ({ ...f, licenseFront: name }))}
-                                    onBack={(name) => setForm((f) => ({ ...f, licenseBack: name }))}
+                                    onFront={(file) => handleFileUpload("licenseFront", file)}
+                                    onBack={(file) => handleFileUpload("licenseBack", file)}
                                   />
                                   <FileUploadField
                                     label="Medical card"
                                     testId="upload-medical-card"
                                     hint="PDF, JPG, PNG up to 10MB"
                                     value={form.medicalCard}
-                                    onChange={(name) => setForm((f) => ({ ...f, medicalCard: name }))}
+                                    onChange={(file) => handleFileUpload("medicalCard", file)}
                                   />
                                   <ResumeUpload
                                     value={form.resume}
-                                    onChange={(name) => setForm((f) => ({ ...f, resume: name }))}
+                                    onChange={(file) => handleFileUpload("resume", file)}
                                   />
                                 </>
                               ) : isInvestor ? (
@@ -633,22 +701,22 @@ export function DriverApplicationModal() {
                                     testId="upload-registration-card"
                                     hint="PDF, JPG, PNG up to 10MB"
                                     value={form.registrationCard}
-                                    onChange={(name) => setForm((f) => ({ ...f, registrationCard: name }))}
+                                    onChange={(file) => handleFileUpload("registrationCard", file)}
                                   />
                                   <FileUploadField
                                     label="Annual truck inspection"
                                     testId="upload-truck-inspection"
                                     hint="PDF, JPG, PNG up to 10MB"
                                     value={form.truckInspection}
-                                    onChange={(name) => setForm((f) => ({ ...f, truckInspection: name }))}
+                                    onChange={(file) => handleFileUpload("truckInspection", file)}
                                   />
                                   <TruckPhotosUpload
                                     engine={form.truckEngine}
                                     underEngine={form.truckUnderEngine}
                                     tires={form.truckTires}
-                                    onEngine={(name) => setForm((f) => ({ ...f, truckEngine: name }))}
-                                    onUnderEngine={(name) => setForm((f) => ({ ...f, truckUnderEngine: name }))}
-                                    onTires={(name) => setForm((f) => ({ ...f, truckTires: name }))}
+                                    onEngine={(file) => handleFileUpload("truckEngine", file)}
+                                    onUnderEngine={(file) => handleFileUpload("truckUnderEngine", file)}
+                                    onTires={(file) => handleFileUpload("truckTires", file)}
                                   />
                                 </>
                               ) : null}
@@ -672,30 +740,59 @@ export function DriverApplicationModal() {
                                   ? [
                                       { label: "CDL", value: form.cdlType ? `Class ${form.cdlType}` : "—" },
                                       { label: "Experience", value: form.experience ? `${form.experience} yrs` : "—" },
-                                      { label: "License", value: form.licenseFront && form.licenseBack ? "Ready" : "—" },
-                                      { label: "Medical card", value: form.medicalCard ? "Ready" : "—" },
+                                      {
+                                        label: "License",
+                                        value:
+                                          isUploaded(form.licenseFront) && isUploaded(form.licenseBack)
+                                            ? "Uploaded"
+                                            : "—",
+                                      },
+                                      { label: "Medical card", value: isUploaded(form.medicalCard) ? "Uploaded" : "—" },
                                     ]
                                   : []),
                                 ...(isOwnerOperator
                                   ? [
-                                      { label: "License", value: form.licenseFront && form.licenseBack ? "Ready" : "—" },
-                                      { label: "Medical card", value: form.medicalCard ? "Ready" : "—" },
-                                      { label: "Truck inspection", value: form.truckInspection ? "Ready" : "—" },
+                                      {
+                                        label: "License",
+                                        value:
+                                          isUploaded(form.licenseFront) && isUploaded(form.licenseBack)
+                                            ? "Uploaded"
+                                            : "—",
+                                      },
+                                      { label: "Medical card", value: isUploaded(form.medicalCard) ? "Uploaded" : "—" },
+                                      {
+                                        label: "Truck inspection",
+                                        value: isUploaded(form.truckInspection) ? "Uploaded" : "—",
+                                      },
                                       {
                                         label: "Truck photos",
                                         value:
-                                          form.truckEngine && form.truckUnderEngine && form.truckTires ? "Ready" : "—",
+                                          isUploaded(form.truckEngine) &&
+                                          isUploaded(form.truckUnderEngine) &&
+                                          isUploaded(form.truckTires)
+                                            ? "Uploaded"
+                                            : "—",
                                       },
                                     ]
                                   : []),
                                 ...(isInvestor
                                   ? [
-                                      { label: "Registration card", value: form.registrationCard ? "Ready" : "—" },
-                                      { label: "Truck inspection", value: form.truckInspection ? "Ready" : "—" },
+                                      {
+                                        label: "Registration card",
+                                        value: isUploaded(form.registrationCard) ? "Uploaded" : "—",
+                                      },
+                                      {
+                                        label: "Truck inspection",
+                                        value: isUploaded(form.truckInspection) ? "Uploaded" : "—",
+                                      },
                                       {
                                         label: "Truck photos",
                                         value:
-                                          form.truckEngine && form.truckUnderEngine && form.truckTires ? "Ready" : "—",
+                                          isUploaded(form.truckEngine) &&
+                                          isUploaded(form.truckUnderEngine) &&
+                                          isUploaded(form.truckTires)
+                                            ? "Uploaded"
+                                            : "—",
                                       },
                                     ]
                                   : []),
@@ -760,7 +857,7 @@ export function DriverApplicationModal() {
                             type="button"
                             data-testid="button-submit-application"
                             onClick={handleSubmit}
-                            disabled={submitting}
+                            disabled={submitting || isAnyFileUploading}
                             className="ml-auto flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary py-3.5 text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_6px_24px_hsl(var(--primary)/0.35)] transition-all hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none sm:px-10"
                           >
                             {submitting ? "Uploading…" : "Submit application"}
@@ -869,14 +966,22 @@ function FormField({
   );
 }
 
+function uploadStatusLabel(value: FileUploadState | null, hint: string): string {
+  if (!value) return hint;
+  if (value.status === "uploading") return "Uploading…";
+  if (value.status === "uploaded") return "Uploaded";
+  if (value.status === "error") return value.error ?? "Upload failed";
+  return hint;
+}
+
 function LicenseUploadPair({
   frontValue,
   backValue,
   onFront,
   onBack,
 }: {
-  frontValue: File | null;
-  backValue: File | null;
+  frontValue: FileUploadState | null;
+  backValue: FileUploadState | null;
   onFront: (file: File | null) => void;
   onBack: (file: File | null) => void;
 }) {
@@ -913,9 +1018,9 @@ function TruckPhotosUpload({
   onUnderEngine,
   onTires,
 }: {
-  engine: File | null;
-  underEngine: File | null;
-  tires: File | null;
+  engine: FileUploadState | null;
+  underEngine: FileUploadState | null;
+  tires: FileUploadState | null;
   onEngine: (file: File | null) => void;
   onUnderEngine: (file: File | null) => void;
   onTires: (file: File | null) => void;
@@ -950,10 +1055,12 @@ function FileUploadField({
   label: string;
   testId: string;
   hint: string;
-  value: File | null;
+  value: FileUploadState | null;
   onChange: (file: File | null) => void;
 }) {
-  const hasFile = !!value;
+  const uploaded = value?.status === "uploaded";
+  const uploading = value?.status === "uploading";
+  const errored = value?.status === "error";
 
   return (
     <div>
@@ -961,32 +1068,68 @@ function FileUploadField({
       <label
         data-testid={testId}
         className={cn(
-          "flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed p-4 transition-colors",
-          hasFile
-            ? "border-emerald-500 bg-emerald-500/10 hover:border-emerald-500 hover:bg-emerald-500/15"
-            : "border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5",
+          "flex items-center gap-3 rounded-lg border-2 border-dashed p-4 transition-colors",
+          uploading ? "cursor-wait" : "cursor-pointer",
+          uploaded
+            ? "border-emerald-500 bg-emerald-500/10"
+            : uploading
+              ? "border-primary/40 bg-primary/5"
+              : errored
+                ? "border-destructive bg-destructive/5"
+                : "border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5",
         )}
       >
         <span
           className={cn(
             "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-            hasFile ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-muted text-muted-foreground",
+            uploaded
+              ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+              : uploading
+                ? "bg-primary/15 text-primary"
+                : errored
+                  ? "bg-destructive/15 text-destructive"
+                  : "bg-muted text-muted-foreground",
           )}
         >
-          {hasFile ? <Check size={18} strokeWidth={2.5} /> : <Upload size={18} />}
+          {uploading ? (
+            <Spinner className="size-[18px]" />
+          ) : uploaded ? (
+            <Check size={18} strokeWidth={2.5} />
+          ) : (
+            <Upload size={18} />
+          )}
         </span>
         <div className="min-w-0">
-          <p className={cn("truncate text-xs font-semibold", hasFile ? "text-emerald-700 dark:text-emerald-400" : "text-foreground")}>
+          <p
+            className={cn(
+              "truncate text-xs font-semibold",
+              uploaded
+                ? "text-emerald-700 dark:text-emerald-400"
+                : errored
+                  ? "text-destructive"
+                  : "text-foreground",
+            )}
+          >
             {value?.name || "Choose file"}
           </p>
-          <p className={cn("text-[10px]", hasFile ? "text-emerald-600/80 dark:text-emerald-400/80" : "text-muted-foreground")}>
-            {hasFile ? "File ready" : hint}
+          <p
+            className={cn(
+              "text-[10px]",
+              uploaded
+                ? "text-emerald-600/80 dark:text-emerald-400/80"
+                : errored
+                  ? "text-destructive/80"
+                  : "text-muted-foreground",
+            )}
+          >
+            {uploadStatusLabel(value, hint)}
           </p>
         </div>
         <input
           type="file"
           className="hidden"
           accept=".pdf,.jpg,.jpeg,.png"
+          disabled={uploading}
           onChange={(e) => onChange(e.target.files?.[0] ?? null)}
         />
       </label>
@@ -994,8 +1137,17 @@ function FileUploadField({
   );
 }
 
-function ResumeUpload({ value, onChange }: { value: File | null; onChange: (file: File | null) => void }) {
-  const hasFile = !!value;
+function ResumeUpload({
+  value,
+  onChange,
+}: {
+  value: FileUploadState | null;
+  onChange: (file: File | null) => void;
+}) {
+  const uploaded = value?.status === "uploaded";
+  const uploading = value?.status === "uploading";
+  const errored = value?.status === "error";
+  const resumeHint = "PDF, DOCX up to 10MB — click or drag and drop";
 
   return (
     <div>
@@ -1005,32 +1157,68 @@ function ResumeUpload({ value, onChange }: { value: File | null; onChange: (file
       <label
         data-testid="upload-resume"
         className={cn(
-          "flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed p-4 transition-colors",
-          hasFile
-            ? "border-emerald-500 bg-emerald-500/10 hover:border-emerald-500 hover:bg-emerald-500/15"
-            : "border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5",
+          "flex items-center gap-3 rounded-lg border-2 border-dashed p-4 transition-colors",
+          uploading ? "cursor-wait" : "cursor-pointer",
+          uploaded
+            ? "border-emerald-500 bg-emerald-500/10"
+            : uploading
+              ? "border-primary/40 bg-primary/5"
+              : errored
+                ? "border-destructive bg-destructive/5"
+                : "border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5",
         )}
       >
         <span
           className={cn(
             "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-            hasFile ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-muted text-muted-foreground",
+            uploaded
+              ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+              : uploading
+                ? "bg-primary/15 text-primary"
+                : errored
+                  ? "bg-destructive/15 text-destructive"
+                  : "bg-muted text-muted-foreground",
           )}
         >
-          {hasFile ? <Check size={18} strokeWidth={2.5} /> : <FileText size={18} />}
+          {uploading ? (
+            <Spinner className="size-[18px]" />
+          ) : uploaded ? (
+            <Check size={18} strokeWidth={2.5} />
+          ) : (
+            <FileText size={18} />
+          )}
         </span>
         <div className="min-w-0">
-          <p className={cn("truncate text-xs font-semibold", hasFile ? "text-emerald-700 dark:text-emerald-400" : "text-foreground")}>
+          <p
+            className={cn(
+              "truncate text-xs font-semibold",
+              uploaded
+                ? "text-emerald-700 dark:text-emerald-400"
+                : errored
+                  ? "text-destructive"
+                  : "text-foreground",
+            )}
+          >
             {value?.name || "Attach resume (optional)"}
           </p>
-          <p className={cn("text-[10px]", hasFile ? "text-emerald-600/80 dark:text-emerald-400/80" : "text-muted-foreground")}>
-            {hasFile ? "File ready" : "PDF, DOCX up to 10MB — click or drag and drop"}
+          <p
+            className={cn(
+              "text-[10px]",
+              uploaded
+                ? "text-emerald-600/80 dark:text-emerald-400/80"
+                : errored
+                  ? "text-destructive/80"
+                  : "text-muted-foreground",
+            )}
+          >
+            {uploadStatusLabel(value, resumeHint)}
           </p>
         </div>
         <input
           type="file"
           className="hidden"
           accept=".pdf,.doc,.docx"
+          disabled={uploading}
           onChange={(e) => onChange(e.target.files?.[0] ?? null)}
         />
       </label>
@@ -1049,41 +1237,81 @@ function FileDropSlot({
   testId: string;
   title: string;
   hint?: string;
-  value: File | null;
+  value: FileUploadState | null;
   onChange: (file: File | null) => void;
   compact?: boolean;
 }) {
-  const hasFile = !!value;
+  const uploaded = value?.status === "uploaded";
+  const uploading = value?.status === "uploading";
+  const errored = value?.status === "error";
 
   return (
     <label
       data-testid={testId}
       className={cn(
-        "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed text-center transition-colors",
+        "flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed text-center transition-colors",
         compact ? "p-4" : "p-5",
-        hasFile
-          ? "border-emerald-500 bg-emerald-500/10 hover:border-emerald-500 hover:bg-emerald-500/15"
-          : "border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5",
+        uploading ? "cursor-wait" : "cursor-pointer",
+        uploaded
+          ? "border-emerald-500 bg-emerald-500/10"
+          : uploading
+            ? "border-primary/40 bg-primary/5"
+            : errored
+              ? "border-destructive bg-destructive/5"
+              : "border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5",
       )}
     >
       <span
         className={cn(
           "flex h-9 w-9 items-center justify-center rounded-lg",
-          hasFile ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-muted text-muted-foreground",
+          uploaded
+            ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+            : uploading
+              ? "bg-primary/15 text-primary"
+              : errored
+                ? "bg-destructive/15 text-destructive"
+                : "bg-muted text-muted-foreground",
         )}
       >
-        {hasFile ? <Check size={16} strokeWidth={2.5} /> : <Upload size={16} />}
+        {uploading ? (
+          <Spinner className="size-4" />
+        ) : uploaded ? (
+          <Check size={16} strokeWidth={2.5} />
+        ) : (
+          <Upload size={16} />
+        )}
       </span>
-      <span className={cn("text-xs font-bold uppercase tracking-wide", hasFile ? "text-emerald-700 dark:text-emerald-400" : "text-foreground")}>
+      <span
+        className={cn(
+          "text-xs font-bold uppercase tracking-wide",
+          uploaded ? "text-emerald-700 dark:text-emerald-400" : errored ? "text-destructive" : "text-foreground",
+        )}
+      >
         {title}
       </span>
-      <span className={cn("truncate px-2 text-[10px]", hasFile ? "text-emerald-600/80 dark:text-emerald-400/80" : "text-muted-foreground")}>
-        {value?.name || hint}
+      <span
+        className={cn(
+          "truncate px-2 text-[10px]",
+          uploaded
+            ? "text-emerald-600/80 dark:text-emerald-400/80"
+            : errored
+              ? "text-destructive/80"
+              : "text-muted-foreground",
+        )}
+      >
+        {value?.status === "uploading"
+          ? "Uploading…"
+          : value?.status === "uploaded"
+            ? value.name
+            : value?.status === "error"
+              ? (value.error ?? "Upload failed")
+              : value?.name || hint}
       </span>
       <input
         type="file"
         className="hidden"
         accept=".pdf,.jpg,.jpeg,.png"
+        disabled={uploading}
         onChange={(e) => onChange(e.target.files?.[0] ?? null)}
       />
     </label>

@@ -91,101 +91,101 @@ export const Navbar = () => {
   const mobileMenu =
     typeof document !== "undefined"
       ? createPortal(
-          <AnimatePresence>
-            {mobileMenuOpen && (
-              <>
-                <motion.button
-                  type="button"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-[58] bg-foreground/40 backdrop-blur-sm md:hidden"
-                  aria-label="Close menu"
-                  onClick={closeMobileMenu}
-                />
-                <motion.aside
-                  key="mobile-drawer"
-                  initial={{ x: "100%" }}
-                  animate={{ x: 0 }}
-                  exit={{ x: "100%" }}
-                  transition={{ type: "spring", damping: 28, stiffness: 320 }}
-                  className="fixed bottom-0 right-0 top-0 z-[60] flex w-[min(100%,340px)] flex-col border-l border-border bg-background shadow-2xl md:hidden"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label="Navigation"
-                >
-                  <div className="flex items-center justify-between border-b border-border px-5 py-4">
-                    <Logo className="h-9 w-auto" />
-                    <button
-                      type="button"
-                      onClick={closeMobileMenu}
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground"
-                      aria-label="Close menu"
-                    >
-                      <X size={20} />
-                    </button>
-                  </div>
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <>
+              <motion.button
+                type="button"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[58] bg-foreground/40 backdrop-blur-sm md:hidden"
+                aria-label="Close menu"
+                onClick={closeMobileMenu}
+              />
+              <motion.aside
+                key="mobile-drawer"
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 28, stiffness: 320 }}
+                className="fixed bottom-0 right-0 top-0 z-[60] flex w-[min(100%,340px)] flex-col border-l border-border bg-background shadow-2xl md:hidden"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Navigation"
+              >
+                <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                  <Logo className="h-9 w-auto" />
+                  <button
+                    type="button"
+                    onClick={closeMobileMenu}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground"
+                    aria-label="Close menu"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
 
-                  <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-6">
-                    {navLinks.map((link, i) => {
-                      const active = location === link.path;
-                      return (
-                        <Link
-                          key={link.path}
-                          href={link.path}
-                          onClick={closeMobileMenu}
+                <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-6">
+                  {navLinks.map((link, i) => {
+                    const active = location === link.path;
+                    return (
+                      <Link
+                        key={link.path}
+                        href={link.path}
+                        onClick={closeMobileMenu}
+                        className={cn(
+                          "group flex items-center gap-4 rounded-2xl px-4 py-4 transition-colors",
+                          active
+                            ? "bg-primary text-primary-foreground"
+                            : "text-foreground hover:bg-muted",
+                        )}
+                      >
+                        <span
                           className={cn(
-                            "group flex items-center gap-4 rounded-2xl px-4 py-4 transition-colors",
-                            active
-                              ? "bg-primary text-primary-foreground"
-                              : "text-foreground hover:bg-muted",
+                            "font-mono text-xs font-bold",
+                            active ? "text-primary-foreground/70" : "text-primary",
                           )}
                         >
-                          <span
-                            className={cn(
-                              "font-mono text-xs font-bold",
-                              active ? "text-primary-foreground/70" : "text-primary",
-                            )}
-                          >
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          <span className="text-lg font-bold tracking-tight">{link.name}</span>
-                          <ArrowUpRight
-                            size={18}
-                            className={cn(
-                              "ml-auto opacity-0 transition-opacity group-hover:opacity-100",
-                              active && "opacity-100",
-                            )}
-                          />
-                        </Link>
-                      );
-                    })}
-                  </nav>
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="text-lg font-bold tracking-tight">{link.name}</span>
+                        <ArrowUpRight
+                          size={18}
+                          className={cn(
+                            "ml-auto opacity-0 transition-opacity group-hover:opacity-100",
+                            active && "opacity-100",
+                          )}
+                        />
+                      </Link>
+                    );
+                  })}
+                </nav>
 
-                  <div className="space-y-3 border-t border-border p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-                    <button
-                      type="button"
-                      data-testid="button-apply-now-mobile"
-                      onClick={() => {
-                        closeMobileMenu();
-                        openModal();
-                      }}
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-bold tracking-widest text-primary-foreground"
-                    >
-                      Apply Now
-                      <ArrowUpRight size={16} />
-                    </button>
-                    <NavPhoneLink
-                      className="flex w-full justify-center py-3.5"
-                      onClick={closeMobileMenu}
-                    />
-                  </div>
-                </motion.aside>
-              </>
-            )}
-          </AnimatePresence>,
-          document.body,
-        )
+                <div className="space-y-3 border-t border-border p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+                  <button
+                    type="button"
+                    data-testid="button-apply-now-mobile"
+                    onClick={() => {
+                      closeMobileMenu();
+                      openModal();
+                    }}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-bold tracking-widest text-primary-foreground"
+                  >
+                    Apply Now
+                    <ArrowUpRight size={16} />
+                  </button>
+                  <NavPhoneLink
+                    className="flex w-full justify-center py-3.5"
+                    onClick={closeMobileMenu}
+                  />
+                </div>
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )
       : null;
 
   return (

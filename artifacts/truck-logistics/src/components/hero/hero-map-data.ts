@@ -46,29 +46,25 @@ export const ROUTES: { from: CityId; to: CityId; delay: number }[] = [
 export const HERO_SHOWCASE = [
   {
     title: "Fleet Operations",
-    sub: "Modern trucks · 48 states",
+    sub: "Late-model tractors maintained to OEM standards across 48 states.",
+    tag: "Fleet",
     image:
-      "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=720&h=960&fit=crop&q=85",
+      "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=85&w=900&h=1200",
   },
   {
     title: "24/7 Dispatch",
-    sub: "Live route coordination",
+    sub: "Real-time routing, live ETAs, and dedicated coordinators on every load.",
+    tag: "Dispatch",
     image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=720&h=960&fit=crop&q=85",
+      "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?auto=format&fit=crop&q=85&w=900&h=1200",
   },
   {
     title: "Nationwide Network",
-    sub: "Coast-to-coast lanes",
+    sub: "Strategic hubs and coast-to-coast lanes built for regional reliability.",
+    tag: "Network",
     image:
-      "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=720&h=960&fit=crop&q=85",
+      "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?auto=format&fit=crop&q=85&w=900&h=1200",
   },
-] as const;
-
-/** Stagger offsets for hero showcase cards */
-export const HERO_SHOWCASE_LAYOUT = [
-  { offset: "md:mt-8 md:-rotate-[2.5deg] md:translate-x-1", size: "h-[220px] sm:h-[250px] md:h-[290px]", z: "z-10" },
-  { offset: "md:mt-0 md:rotate-0 md:scale-[1.04]", size: "h-[240px] sm:h-[280px] md:h-[340px]", z: "z-10" },
-  { offset: "md:mt-8 md:rotate-[2.5deg] md:-translate-x-1", size: "h-[220px] sm:h-[250px] md:h-[290px]", z: "z-10" },
 ] as const;
 
 export const HERO_STATS = [

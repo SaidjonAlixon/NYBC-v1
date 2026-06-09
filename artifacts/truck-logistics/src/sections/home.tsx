@@ -6,65 +6,69 @@ import { HeroUsaMap } from "@/components/hero/HeroUsaMap";
 export { HeroSection } from "@/components/hero/HeroSection";
 
 export const ServicesSection = () => {
+  const [activeIdx, setActiveIdx] = useState(0);
   const services = [
-    {
-      icon: <Truck size={32} />,
-      title: "Freight Transportation",
-      desc: "Dependable local and regional freight transportation with on-time deliveries, responsive communication, and real-time shipment visibility.",
-    },
-    {
-      icon: <Map size={32} />,
-      title: "Regional Delivery",
-      desc: "Regional delivery routes designed for efficiency, fast transit times, and consistent service across neighboring states.",
-    },
-    {
-      icon: <Clock size={32} />,
-      title: "Refrigerated Logistics",
-      desc: "Temperature-controlled transportation solutions that protect sensitive freight from pickup to final delivery.",
-    },
-    {
-      icon: <Package size={32} />,
-      title: "Heavy Cargo",
-      desc: "Specialized hauling solutions for heavy equipment, industrial materials, and oversized regional shipments.",
-    },
-    {
-      icon: <BarChart3 size={32} />,
-      title: "Fleet Solutions",
-      desc: "Flexible fleet solutions tailored to support recurring routes, dedicated deliveries, and growing transportation demands.",
-    },
-    {
-      icon: <Globe size={32} />,
-      title: "Nationwide Shipping",
-      desc: "Expanded shipping coverage through trusted logistics partnerships, connecting local freight to destinations across the country.",
-    },
+    { icon: <Truck size={32} />, title: "Freight", desc: "Dependable local and regional freight transportation with on-time deliveries." },
+    { icon: <Map size={32} />, title: "Regional", desc: "Regional delivery routes designed for efficiency and fast transit times." },
+    { icon: <Clock size={32} />, title: "Refrigerated", desc: "Temperature-controlled transportation solutions that protect sensitive freight." },
+    { icon: <Package size={32} />, title: "Heavy Cargo", desc: "Specialized hauling solutions for heavy equipment and oversized shipments." },
+    { icon: <BarChart3 size={32} />, title: "Fleet", desc: "Flexible fleet solutions tailored to support recurring routes." },
+    { icon: <Globe size={32} />, title: "Nationwide", desc: "Expanded shipping coverage connecting local freight across the country." },
   ];
+
   return (
-    <section className="py-32 relative z-10 bg-background">
+    <section className="py-32 relative z-10 bg-background border-b border-border overflow-hidden">
       <div className="container px-6 mx-auto">
-        <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">OUR CAPABILITIES</h2>
-          <div className="w-20 h-1 bg-primary mx-auto" />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-              className="p-8 rounded-xl bg-card border border-white/5 hover:border-primary/50 transition-all group cursor-pointer relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="text-primary mb-6 group-hover:scale-110 transition-transform origin-left">
-                {service.icon}
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16 md:mb-24">
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4 uppercase">OUR CAPABILITIES</h2>
+          <div className="w-24 h-1 bg-primary mx-auto" />
+        </motion.div>
+
+        <div className="flex flex-col md:flex-row w-full h-[800px] md:h-[550px] gap-4 md:gap-6">
+          {services.map((service, idx) => {
+            const isActive = activeIdx === idx;
+            return (
+              <div
+                key={idx}
+                onMouseEnter={() => setActiveIdx(idx)}
+                className={`relative rounded-3xl overflow-hidden cursor-pointer transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col justify-end p-6 md:p-8 ${
+                  isActive 
+                    ? "flex-[4] bg-primary shadow-2xl scale-[1.02] md:scale-100" 
+                    : "flex-1 bg-card border border-border hover:bg-muted"
+                }`}
+              >
+                {/* Massive Background Icon when Active */}
+                <div className={`absolute -right-10 -bottom-10 transition-all duration-1000 ${isActive ? "opacity-10 scale-150 text-black" : "opacity-0"}`}>
+                  {service.icon}
+                </div>
+
+                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-end gap-6 h-full">
+                  <div className={`shrink-0 rounded-2xl flex items-center justify-center transition-all duration-700 ${
+                    isActive ? "w-16 h-16 bg-white/20 text-white" : "w-12 h-12 bg-primary/10 text-primary"
+                  }`}>
+                    {service.icon}
+                  </div>
+                  
+                  <div className={`flex-1 transition-all duration-500 overflow-hidden ${
+                    isActive ? "opacity-100 max-h-[200px]" : "opacity-0 max-h-0 md:max-h-full md:opacity-100"
+                  }`}>
+                    <div className="flex flex-col justify-end h-full">
+                      <h3 className={`font-bold tracking-tight mb-2 uppercase whitespace-nowrap transition-all duration-500 ${
+                        isActive ? "text-3xl text-white" : "text-xl text-foreground md:-rotate-90 md:origin-bottom-left md:translate-x-6 md:-translate-y-8"
+                      }`}>
+                        {service.title}
+                      </h3>
+                      <p className={`text-white/80 text-lg leading-relaxed transition-all duration-500 delay-100 ${
+                        isActive ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8 hidden md:block"
+                      }`}>
+                        {service.desc}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-bold tracking-tight mb-3 text-foreground">{service.title}</h3>
-              <p className="text-muted-foreground">{service.desc}</p>
-            </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
@@ -79,23 +83,22 @@ export const StatsSection = () => {
     { value: "48", label: "States Covered" }
   ];
   return (
-    <section className="py-24 border-y border-white/5 relative overflow-hidden bg-card">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--primary)_0%,transparent_100%)] opacity-5" />
+    <section className="py-24 bg-card relative overflow-hidden border-b border-border">
       <div className="container px-6 mx-auto relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
           {stats.map((stat, idx) => (
-            <motion.div 
+            <motion.div
               key={idx}
-              initial={{ opacity: 0, scale: 0.5 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="flex flex-col items-center justify-center p-6"
+              transition={{ duration: 0.7, delay: idx * 0.15, type: "spring" }}
+              className="flex flex-col items-center justify-center p-6 border-b border-border md:border-b-0"
             >
-              <span className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-foreground to-foreground/50 mb-2">
+              <span className="text-5xl md:text-8xl font-bold tracking-tighter text-foreground mb-4">
                 {stat.value}
               </span>
-              <span className="text-sm font-bold tracking-widest text-primary uppercase">{stat.label}</span>
+              <span className="text-sm md:text-base font-bold tracking-widest text-primary uppercase">{stat.label}</span>
             </motion.div>
           ))}
         </div>
@@ -112,28 +115,29 @@ export const HowWeWorkSection = () => {
     { num: "04", title: "DELIVER", desc: "On-time, in-perfect-condition, guaranteed." },
   ];
   return (
-    <section className="py-32 bg-background">
+    <section className="py-32 bg-background border-b border-border">
       <div className="container px-6 mx-auto">
-        <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">HOW WE DELIVER EXCELLENCE</h2>
-          <div className="w-20 h-1 bg-primary mx-auto" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
-          <div className="hidden md:block absolute top-12 left-10 right-10 h-0.5 bg-border z-0" />
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-24">
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4 uppercase">HOW WE DELIVER EXCELLENCE</h2>
+          <div className="w-24 h-1 bg-primary mx-auto" />
+        </motion.div>
+        <div className="flex flex-col gap-16 max-w-4xl mx-auto">
           {steps.map((step, idx) => (
-            <motion.div 
+            <motion.div
               key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className="relative z-10 flex flex-col items-center text-center group"
+              initial={{ opacity: 0, x: idx % 2 === 0 ? -50 : 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, type: "spring" }}
+              className="flex flex-col md:flex-row items-center md:even:flex-row-reverse gap-8 md:gap-16 group"
             >
-              <div className="w-24 h-24 rounded-full bg-card border-2 border-primary/20 flex items-center justify-center mb-6 group-hover:border-primary group-hover:shadow-[0_0_20px_rgba(193,18,31,0.3)] transition-all">
-                <span className="text-2xl font-bold text-primary">{step.num}</span>
+              <div className="text-[8rem] font-bold tracking-tighter leading-none text-muted/20 group-hover:text-primary transition-colors duration-500">
+                {step.num}
               </div>
-              <h3 className="text-xl font-bold tracking-widest mb-3">{step.title}</h3>
-              <p className="text-muted-foreground">{step.desc}</p>
+              <div className={`flex-1 ${idx % 2 === 0 ? "md:text-left text-center" : "text-center md:text-right"}`}>
+                <h3 className="text-3xl font-bold tracking-tight mb-4 uppercase text-foreground">{step.title}</h3>
+                <p className="text-xl text-muted-foreground">{step.desc}</p>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -152,27 +156,27 @@ export const IndustriesSection = () => {
     { title: "Automotive", stat: "Parts supply" }
   ];
   return (
-    <section className="py-32 bg-card/20">
+    <section className="py-32 bg-background border-b border-border">
       <div className="container px-6 mx-auto">
-        <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">INDUSTRIES WE POWER</h2>
-          <div className="w-20 h-1 bg-primary mx-auto" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-24">
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4 uppercase">INDUSTRIES WE POWER</h2>
+          <div className="w-24 h-1 bg-primary" />
+        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
           {industries.map((ind, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className="p-8 bg-card border border-white/5 rounded-xl hover:border-primary transition-all hover:-translate-y-2 group"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ delay: idx * 0.1, duration: 0.6 }}
+              className="flex flex-col border-b border-border pb-8 group cursor-pointer"
             >
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary/20">
-                <Package className="text-primary" />
+              <div className="flex justify-between items-end">
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">{ind.title}</h3>
+                <Package className="text-muted-foreground group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100 -translate-y-2 group-hover:translate-y-0 duration-300" />
               </div>
-              <h3 className="text-2xl font-bold mb-2">{ind.title}</h3>
-              <p className="text-muted-foreground font-medium">{ind.stat}</p>
+              <p className="text-muted-foreground font-bold tracking-widest text-sm uppercase mt-4">{ind.stat}</p>
             </motion.div>
           ))}
         </div>
@@ -183,56 +187,38 @@ export const IndustriesSection = () => {
 
 export const RouteMapSection = () => {
   return (
-    <section className="relative overflow-hidden bg-background py-32">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-40 dark:opacity-60"
-        aria-hidden
-      >
-        <div className="absolute left-1/2 top-1/2 h-[70%] w-[80%] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.08)_0%,transparent_70%)]" />
-      </div>
-
-      <div className="container relative z-10 mx-auto px-6">
-        <div className="mb-12 text-center md:mb-16">
-          <motion.h2
-            initial={{ opacity: 0, y: 16 }}
+    <section className="relative overflow-hidden bg-card py-32 border-b border-border">
+      <div className="container relative z-10 mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+        <div className="lg:col-span-4">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="mb-4 text-3xl font-bold tracking-tighter md:text-5xl"
+            transition={{ duration: 0.6 }}
+            className="mb-12 md:mb-16"
           >
-            OUR NATIONAL COVERAGE
-          </motion.h2>
-          <div className="mx-auto mb-6 h-1 w-20 bg-primary" />
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mx-auto max-w-2xl text-muted-foreground"
-          >
-            NYBC Trucking connects coast-to-coast through eight strategic hubs — with live freight lanes
-            across all 48 continental states.
-          </motion.p>
+            <h2 className="mb-8 text-4xl font-bold tracking-tighter md:text-6xl uppercase">
+              OUR NATIONAL COVERAGE
+            </h2>
+            <div className="mb-8 h-1 w-24 bg-primary" />
+            <p className="text-xl text-muted-foreground leading-relaxed">
+              NYBC Trucking connects coast-to-coast through eight strategic hubs — with live freight lanes
+              across all 48 continental states. We are always moving.
+            </p>
+          </motion.div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          className="relative overflow-hidden rounded-2xl border border-border bg-card/40 shadow-[0_24px_80px_rgba(0,0,0,0.12)] dark:border-white/10 dark:bg-card/30 dark:shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
-        >
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.15] dark:opacity-20"
-            aria-hidden
-            style={{
-              backgroundImage:
-                "linear-gradient(hsl(var(--border)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px)",
-              backgroundSize: "40px 40px",
-            }}
-          />
-          <HeroUsaMap variant="coverage" />
-        </motion.div>
+        <div className="lg:col-span-8">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="relative"
+          >
+            <HeroUsaMap variant="coverage" />
+          </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -240,27 +226,6 @@ export const RouteMapSection = () => {
 
 export const FleetSection = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    const section = sectionRef.current;
-    if (!el || !section) return;
-
-    const onWheel = (e: WheelEvent) => {
-      const atStart = el.scrollLeft === 0;
-      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
-
-      if ((e.deltaY < 0 && atStart) || (e.deltaY > 0 && atEnd)) return;
-
-      e.preventDefault();
-      el.scrollBy({ left: e.deltaY * 1.5, behavior: "smooth" });
-    };
-
-    section.addEventListener("wheel", onWheel, { passive: false });
-    return () => section.removeEventListener("wheel", onWheel);
-  }, []);
-
   const trucks = [
     { type: "Dry Van", capacity: "45,000 lbs", best: "General Freight", routes: "All 48 States" },
     { type: "Reefer", capacity: "43,000 lbs", best: "Temperature Control", routes: "Fresh & Frozen" },
@@ -270,70 +235,43 @@ export const FleetSection = () => {
   ];
 
   return (
-    <section ref={sectionRef} className="py-32 bg-card/20 border-y border-white/5">
-      <div className="container px-6 mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">OUR PREMIUM FLEET</h2>
-          <div className="w-20 h-1 bg-primary mx-auto mb-4" />
-          <p className="text-muted-foreground text-sm tracking-widest">SCROLL TO EXPLORE</p>
-        </div>
-        <div
-          ref={scrollRef}
-          className="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-none"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {trucks.map((truck, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="min-w-[300px] md:min-w-[420px] snap-center p-8 bg-background border border-white/5 rounded-xl hover:border-primary/30 transition-all duration-300 hover:shadow-[0_0_40px_rgba(193,18,31,0.15)] group flex-shrink-0"
-            >
-              <div className="h-44 bg-card mb-6 flex items-center justify-center rounded-lg border border-white/5 relative overflow-hidden group-hover:border-primary/50 transition-colors duration-300">
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <motion.div
-                  whileHover={{ scale: 1.1, rotate: -3 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <Truck size={72} className="text-muted-foreground/30 group-hover:text-primary/60 transition-colors duration-300" />
-                </motion.div>
-                <div className="absolute bottom-3 right-3 px-2 py-1 rounded bg-primary/20 border border-primary/30">
-                  <span className="text-xs font-bold text-primary tracking-widest">{truck.routes}</span>
-                </div>
+    <section className="py-32 bg-background border-b border-border overflow-hidden">
+      <div className="container px-6 mx-auto mb-16">
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex justify-between items-end">
+          <div>
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4 uppercase">OUR PREMIUM FLEET</h2>
+            <div className="w-24 h-1 bg-primary" />
+          </div>
+          <p className="hidden md:block text-muted-foreground text-sm font-bold tracking-widest uppercase">SWIPE TO EXPLORE →</p>
+        </motion.div>
+      </div>
+      
+      <div
+        ref={scrollRef}
+        className="flex gap-8 px-6 pb-12 overflow-x-auto snap-x snap-mandatory hide-scrollbar"
+      >
+        {trucks.map((truck, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "0px 100px" }}
+            transition={{ duration: 0.6, delay: idx * 0.1 }}
+            className="min-w-[85vw] md:min-w-[450px] snap-center shrink-0 group relative cursor-pointer"
+          >
+            <div className="h-[300px] bg-card border border-border flex items-center justify-center p-8 transition-colors group-hover:border-primary/50 relative overflow-hidden">
+              <Truck size={120} className="text-muted/20 absolute -right-10 -bottom-10 group-hover:scale-110 transition-transform duration-700" />
+              <div className="relative z-10 w-full text-left">
+                <span className="text-primary font-bold tracking-widest text-xs mb-4 block uppercase">{truck.routes}</span>
+                <h3 className="text-3xl font-bold uppercase leading-none mb-6 text-foreground">{truck.type}</h3>
+                <ul className="space-y-2 text-sm font-medium text-muted-foreground tracking-wide uppercase">
+                  <li>Capacity: {truck.capacity}</li>
+                  <li>Best For: {truck.best}</li>
+                </ul>
               </div>
-              <h3 className="text-2xl font-bold tracking-tight mb-3">{truck.type}</h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                  <span className="text-muted-foreground">Capacity:</span>
-                  <span className="font-bold text-primary">{truck.capacity}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Best For:</span>
-                  <span className="font-bold text-foreground">{truck.best}</span>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Scroll indicators */}
-        <div className="flex justify-center items-center gap-3 mt-6">
-          {trucks.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                const el = scrollRef.current;
-                if (!el) return;
-                const cardWidth = el.scrollWidth / trucks.length;
-                el.scrollTo({ left: cardWidth * i, behavior: "smooth" });
-              }}
-              className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-primary transition-colors duration-200"
-              data-testid={`button-fleet-dot-${i}`}
-            />
-          ))}
-        </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
     </section>
   );
@@ -341,50 +279,51 @@ export const FleetSection = () => {
 
 export const DashboardSection = () => {
   return (
-    <section className="py-32 bg-background">
+    <section className="py-32 bg-card border-b border-border">
       <div className="container px-6 mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">LIVE OPERATIONS CENTER</h2>
-          <div className="w-20 h-1 bg-primary mx-auto" />
-        </div>
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-24">
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4 uppercase">LIVE OPERATIONS CENTER</h2>
+          <div className="w-24 h-1 bg-primary mx-auto" />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="w-full bg-card rounded-2xl border border-white/10 p-8 shadow-2xl relative overflow-hidden"
+          transition={{ duration: 0.8 }}
+          className="w-full bg-background border border-border p-8 md:p-16 relative overflow-hidden"
         >
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px]" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-            <div className="space-y-6">
-              <div className="bg-background/50 p-6 rounded-lg border border-white/5">
-                <h4 className="text-sm font-bold tracking-widest text-muted-foreground mb-2">ACTIVE SHIPMENTS</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 relative z-10">
+            <div className="space-y-12">
+              <div>
+                <h4 className="text-sm font-bold tracking-widest text-muted-foreground uppercase mb-4">ACTIVE SHIPMENTS</h4>
                 <div className="flex items-center gap-4">
-                  <span className="text-4xl font-bold text-foreground">347</span>
-                  <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                  <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.5 }} className="text-6xl font-bold text-foreground">347</motion.span>
+                  <span className="w-4 h-4 rounded-full bg-green-500 animate-pulse" />
                 </div>
               </div>
-              <div className="bg-background/50 p-6 rounded-lg border border-white/5">
-                <h4 className="text-sm font-bold tracking-widest text-muted-foreground mb-2">FLEET UTILIZATION</h4>
-                <span className="text-4xl font-bold text-primary">94%</span>
+              <div>
+                <h4 className="text-sm font-bold tracking-widest text-muted-foreground uppercase mb-4">FLEET UTILIZATION</h4>
+                <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.7 }} className="text-6xl font-bold text-primary">94%</motion.span>
               </div>
             </div>
-            <div className="bg-background/50 p-6 rounded-lg border border-white/5 flex flex-col justify-end min-h-[200px] gap-2">
-               <div className="flex justify-between items-end h-32 gap-2">
-                 {[40, 70, 45, 90, 65, 85, 100].map((h, i) => (
-                   <motion.div key={i} initial={{ height: 0 }} whileInView={{ height: `${h}%` }} transition={{ delay: i*0.1 }} className="w-full bg-primary/50 rounded-t-sm" />
-                 ))}
-               </div>
+            <div className="flex flex-col justify-end min-h-[200px] gap-4">
+              <h4 className="text-sm font-bold tracking-widest text-muted-foreground uppercase mb-4 text-center">WEEKLY VOLUME</h4>
+              <div className="flex justify-between items-end h-40 gap-4">
+                {[40, 70, 45, 90, 65, 85, 100].map((h, i) => (
+                  <motion.div key={i} initial={{ height: 0 }} whileInView={{ height: `${h}%` }} transition={{ duration: 0.8, delay: i * 0.1 }} className="w-full bg-foreground hover:bg-primary transition-colors cursor-pointer" />
+                ))}
+              </div>
             </div>
-            <div className="bg-background/50 p-6 rounded-lg border border-white/5 overflow-hidden">
-               <h4 className="text-sm font-bold tracking-widest text-muted-foreground mb-4">LIVE DISPATCHES</h4>
-               <div className="space-y-4">
-                 {["Dallas → Chicago", "Miami → Atlanta", "Seattle → Denver", "New York → Boston"].map((route, i) => (
-                   <div key={i} className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-                     <span className="text-foreground font-medium">{route}</span>
-                     <span className="text-green-500 text-xs tracking-widest">EN ROUTE</span>
-                   </div>
-                 ))}
-               </div>
+            <div>
+              <h4 className="text-sm font-bold tracking-widest text-muted-foreground uppercase mb-8">LIVE DISPATCHES</h4>
+              <div className="space-y-6">
+                {["Dallas → Chicago", "Miami → Atlanta", "Seattle → Denver", "New York → Boston"].map((route, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.2 }} className="flex justify-between items-center text-lg border-b border-border pb-4">
+                    <span className="text-foreground font-bold">{route}</span>
+                    <span className="text-green-500 text-xs font-bold tracking-widest">EN ROUTE</span>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -395,11 +334,13 @@ export const DashboardSection = () => {
 
 export const TestimonialsSection = () => {
   return (
-    <section className="py-24 border-y border-white/5 bg-card/10">
+    <section className="py-32 bg-background border-b border-border">
       <div className="container px-6 mx-auto text-center">
-        <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">CLIENT SUCCESS</h2>
-        <div className="w-20 h-1 bg-primary mx-auto mb-16" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-24">
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4 uppercase">CLIENT SUCCESS</h2>
+          <div className="w-24 h-1 bg-primary mx-auto" />
+        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
           {[
             { name: "John D.", role: "Supply Chain Dir.", text: "AMTRUCK's precision and reliability transformed our distribution network." },
             { name: "Sarah M.", role: "Operations VP", text: "The realtime tracking and 24/7 support gives us unparalleled peace of mind." },
@@ -407,19 +348,19 @@ export const TestimonialsSection = () => {
           ].map((testimonial, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="p-8 bg-background border border-white/5 rounded-xl flex flex-col gap-6 text-left"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: idx * 0.15 }}
+              className="flex flex-col text-left group"
             >
-              <div className="flex gap-1 text-primary">
-                {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
+              <div className="flex gap-2 text-primary mb-8">
+                {[...Array(5)].map((_, i) => <Star key={i} size={24} fill="currentColor" className="group-hover:scale-110 transition-transform" style={{ transitionDelay: `${i * 50}ms` }} />)}
               </div>
-              <p className="text-lg italic text-muted-foreground">"{testimonial.text}"</p>
+              <p className="text-2xl font-medium leading-relaxed italic text-foreground mb-8 group-hover:text-primary transition-colors duration-300">"{testimonial.text}"</p>
               <div>
-                <h4 className="font-bold text-foreground">{testimonial.name}</h4>
-                <span className="text-sm text-primary tracking-widest">{testimonial.role}</span>
+                <h4 className="font-bold text-xl uppercase tracking-tight">{testimonial.name}</h4>
+                <span className="text-sm font-bold text-muted-foreground tracking-widest uppercase">{testimonial.role}</span>
               </div>
             </motion.div>
           ))}
@@ -431,61 +372,39 @@ export const TestimonialsSection = () => {
 
 export const NewsSection = () => {
   const articles = [
-    {
-      tag: "Technology",
-      title: "The Future of American Freight: AI-Powered Dispatch",
-      image:
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop&q=80",
-      alt: "Dispatch dashboard and freight technology",
-    },
-    {
-      tag: "Safety",
-      title: "2024 Safety Compliance Guide for OTR Drivers",
-      image:
-        "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=800&h=500&fit=crop&q=80",
-      alt: "Semi truck on the highway",
-    },
-    {
-      tag: "Market Trends",
-      title: "Why Cold Chain Logistics is America's Fastest Growing Sector",
-      image:
-        "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=500&fit=crop&q=80",
-      alt: "Warehouse logistics and cold chain operations",
-    },
+    { tag: "Technology", title: "The Future of American Freight: AI-Powered Dispatch", image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop&q=80", alt: "Dispatch dashboard and freight technology" },
+    { tag: "Safety", title: "2024 Safety Compliance Guide for OTR Drivers", image: "https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=800&h=500&fit=crop&q=80", alt: "Semi truck on the highway" },
+    { tag: "Market Trends", title: "Why Cold Chain Logistics is America's Fastest Growing Sector", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=500&fit=crop&q=80", alt: "Warehouse logistics and cold chain operations" },
   ];
   return (
-    <section className="py-32 bg-background">
+    <section className="py-32 bg-card border-b border-border">
       <div className="container px-6 mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-4">WEEKLY NEWS</h2>
-          <div className="w-20 h-1 bg-primary mx-auto mb-4" />
-          <p className="mx-auto max-w-2xl text-muted-foreground">
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
+          <div>
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4 uppercase">WEEKLY NEWS</h2>
+            <div className="w-24 h-1 bg-primary" />
+          </div>
+          <p className="max-w-md text-muted-foreground font-medium text-lg">
             Fresh updates from the road — fleet news, safety tips, and market trends every week.
           </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {articles.map((art, i) => (
-            <motion.div 
-              key={i} 
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="group cursor-pointer border border-white/5 bg-card/20 rounded-xl overflow-hidden hover:border-primary/50 transition-all"
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ delay: i * 0.15, duration: 0.6 }}
+              className="group cursor-pointer flex flex-col"
             >
-              <div className="relative h-48 overflow-hidden bg-muted">
-                <img
-                  src={art.image}
-                  alt={art.alt}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
+              <div className="relative h-64 overflow-hidden bg-muted mb-8">
+                <img src={art.image} alt={art.alt} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
               </div>
-              <div className="p-6">
-                <span className="text-xs font-bold tracking-widest text-primary mb-2 block">{art.tag}</span>
-                <h3 className="text-xl font-bold mb-4 group-hover:text-primary transition-colors">{art.title}</h3>
-                <span className="text-sm font-bold tracking-widest text-muted-foreground flex items-center gap-2 group-hover:text-foreground transition-colors">READ MORE <ArrowRight size={16} /></span>
+              <div>
+                <span className="text-xs font-bold tracking-widest text-primary mb-4 block uppercase">{art.tag}</span>
+                <h3 className="text-2xl font-bold mb-6 group-hover:text-primary transition-colors leading-tight">{art.title}</h3>
+                <span className="text-sm font-bold tracking-widest text-foreground flex items-center gap-4 group-hover:gap-6 transition-all uppercase">READ MORE <ArrowRight size={20} /></span>
               </div>
             </motion.div>
           ))}
@@ -495,31 +414,31 @@ export const NewsSection = () => {
   );
 };
 
-const CTA_TRUCK_IMAGE =
-  "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1600&h=900&fit=crop&q=80";
+const CTA_TRUCK_IMAGE = "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1600&h=900&fit=crop&q=80";
 
 export const CtaSection = () => (
-  <section className="relative flex items-center justify-center overflow-hidden bg-background py-40">
-    <img
-      src={CTA_TRUCK_IMAGE}
-      alt=""
-      aria-hidden
-      className="absolute inset-0 h-full w-full object-cover"
-    />
-    <div className="absolute inset-0 bg-gradient-to-b from-background/92 via-background/72 to-background/92 dark:from-[hsl(223_55%_9%)]/94 dark:via-[hsl(223_55%_9%)]/78 dark:to-[hsl(223_55%_9%)]/94" />
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background)/0.45)_100%)]" />
+  <section className="relative flex items-center justify-center overflow-hidden bg-background py-48">
+    <img src={CTA_TRUCK_IMAGE} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-30" />
+    <div className="absolute inset-0 bg-background/80" />
 
     <div className="container relative z-10 flex flex-col items-center px-6 text-center">
-      <h2 className="mb-8 max-w-3xl text-4xl font-bold leading-tight tracking-tighter text-foreground md:text-6xl">
-        READY TO MOVE YOUR BUSINESS FORWARD?
-      </h2>
-      <Link
-        href="/contact"
-        className="group inline-flex items-center gap-4 bg-primary px-10 py-5 text-lg font-bold tracking-widest text-primary-foreground shadow-[0_0_30px_rgba(193,18,31,0.4)] transition-all hover:scale-105 hover:bg-primary/90"
+      <motion.h2 
+        initial={{ opacity: 0, y: 30 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }} 
+        className="mb-16 max-w-4xl text-5xl font-bold leading-tight tracking-tighter text-foreground md:text-8xl uppercase"
       >
-        CONTACT US
-        <ArrowRight className="transition-transform group-hover:translate-x-2" />
-      </Link>
+        READY TO MOVE YOUR BUSINESS FORWARD?
+      </motion.h2>
+      <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
+        <Link
+          href="/contact"
+          className="group inline-flex items-center gap-6 border-b-2 border-primary pb-2 text-2xl md:text-4xl font-bold tracking-widest text-foreground uppercase hover:text-primary transition-colors"
+        >
+          CONTACT US
+          <ArrowRight size={32} className="transition-transform group-hover:translate-x-4" />
+        </Link>
+      </motion.div>
     </div>
   </section>
 );

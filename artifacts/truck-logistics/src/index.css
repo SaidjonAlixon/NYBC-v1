@@ -69,11 +69,11 @@
 
 /* LIGHT MODE */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
+  --button-outline: rgba(0, 0, 0, .10);
+  --badge-outline: rgba(0, 0, 0, .05);
   --opaque-button-border-intensity: -8;
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
+  --elevate-1: rgba(0, 0, 0, .03);
+  --elevate-2: rgba(0, 0, 0, .08);
 
   --background: 0 0% 100%;
   --foreground: 223 72% 11%;
@@ -81,7 +81,7 @@
   --card: 0 0% 100%;
   --card-foreground: 223 72% 11%;
   --card-border: 214 20% 90%;
-  
+
   --sidebar: 0 0% 100%;
   --sidebar-foreground: 223 72% 11%;
   --sidebar-border: 215 25% 87%;
@@ -90,11 +90,11 @@
   --sidebar-accent: 210 20% 90%;
   --sidebar-accent-foreground: 223 72% 11%;
   --sidebar-ring: 355 83% 41%;
-  
+
   --popover: 0 0% 100%;
   --popover-foreground: 223 72% 11%;
   --popover-border: 214 20% 90%;
-  
+
   --primary: 355 83% 41%;
   --primary-foreground: 210 40% 98%;
   --secondary: 210 20% 90%;
@@ -107,7 +107,7 @@
   --destructive-foreground: 210 40% 98%;
   --input: 215 25% 87%;
   --ring: 355 83% 41%;
-  
+
   --chart-1: 355 83% 41%;
   --chart-2: 223 72% 11%;
   --chart-3: 215 16% 45%;
@@ -118,7 +118,7 @@
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
   --radius: .5rem;
-  
+
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.1);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.1);
   --shadow-sm: 0px 2px 0px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px hsl(0 0% 0% / 0.1);
@@ -127,7 +127,7 @@
   --shadow-lg: 0px 2px 0px 0px hsl(0 0% 0% / 0.1), 0px 4px 6px -1px hsl(0 0% 0% / 0.1);
   --shadow-xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.1), 0px 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.1);
-  
+
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
@@ -141,11 +141,11 @@
 }
 
 .dark {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
+  --button-outline: rgba(255, 255, 255, .10);
+  --badge-outline: rgba(255, 255, 255, .05);
   --opaque-button-border-intensity: 9;
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
+  --elevate-1: rgba(255, 255, 255, .04);
+  --elevate-2: rgba(255, 255, 255, .09);
 
   --background: 223 39% 7%;
   --foreground: 210 40% 98%;
@@ -153,7 +153,7 @@
   --card: 219 75% 11%;
   --card-foreground: 210 40% 98%;
   --card-border: 223 39% 14%;
-  
+
   --sidebar: 219 75% 11%;
   --sidebar-foreground: 210 40% 98%;
   --sidebar-border: 223 39% 14%;
@@ -162,11 +162,11 @@
   --sidebar-accent: 223 39% 14%;
   --sidebar-accent-foreground: 210 40% 98%;
   --sidebar-ring: 355 83% 41%;
-  
+
   --popover: 219 75% 11%;
   --popover-foreground: 210 40% 98%;
   --popover-border: 223 39% 14%;
-  
+
   --primary: 355 83% 41%;
   --primary-foreground: 210 40% 98%;
   --secondary: 219 75% 11%;
@@ -179,7 +179,7 @@
   --destructive-foreground: 210 40% 98%;
   --input: 223 39% 14%;
   --ring: 355 83% 41%;
-  
+
   --chart-1: 355 83% 41%;
   --chart-2: 219 75% 11%;
   --chart-3: 215 16% 65%;
@@ -207,13 +207,25 @@
 }
 
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-20px) scale(1.05); }
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-20px) scale(1.05);
+  }
 }
 
 @layer utilities {
@@ -221,7 +233,7 @@
   .animate-marquee {
     animation: marquee 30s linear infinite;
   }
-  
+
   .animate-marquee-reverse {
     animation: marquee 30s linear infinite reverse;
   }
@@ -302,4 +314,12 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
